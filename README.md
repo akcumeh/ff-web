@@ -54,3 +54,15 @@ If an owner loses the phone with their authenticator app:
 ```bash
 npm run reset-mfa -- owner@example.com
 ```
+
+## Local sample data
+
+Needs Docker Desktop running. This only touches the local database.
+
+```bash
+npx supabase start
+npx supabase db reset
+SUPABASE_SEC_KEY=<local secret key from `npx supabase status`> node scripts/seed-images.ts
+```
+
+`db reset` rebuilds the local database from the migrations and loads `supabase/seed.sql` (12 sample suits). `seed-images.ts` uploads sample photos from `docs/design-system/photos` into the local `public-suits` bucket.

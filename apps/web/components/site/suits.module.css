@@ -1,0 +1,128 @@
+.card {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top;
+  background: var(--surface);
+}
+
+.noPhoto {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--surface);
+}
+
+.cardRule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: var(--space-1) 0 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font: 400 28px/32px var(--font-display);
+}
+
+.cardDetail {
+  margin: 0;
+  font: var(--sub-md);
+  letter-spacing: var(--sub-md-tracking);
+  color: var(--ink-soft);
+}
+
+.price {
+  margin: 0;
+  font: var(--body-figure);
+  color: var(--accent-text);
+}
+
+.priceSmall {
+  margin: 0;
+  font: 500 20px/24px var(--font-body);
+  color: var(--accent-text);
+}
+
+.cardLink {
+  font: var(--body-sm);
+  color: var(--link);
+  text-decoration: underline;
+}
+
+.card:hover .cardLink {
+  color: var(--accent-text);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.tag {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  font: var(--sub-caps);
+  letter-spacing: var(--sub-caps-tracking);
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 300px);
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.track > li {
+  scroll-snap-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
+  }
+}
+
+.arrows {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.arrow {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-square);
+  background: transparent;
+  color: var(--ink);
+  font: var(--body-md);
+  cursor: pointer;
+}
+
+.arrow:hover {
+  background: var(--hover);
+}

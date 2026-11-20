@@ -1,0 +1,99 @@
+.themeRoot {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: max(16px, min(var(--space-5), 5vw));
+}
+
+.header {
+  border-bottom: 1px solid var(--line);
+}
+
+.headerInner {
+  min-height: 88px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding-block: var(--space-2);
+}
+
+.wordmark {
+  font: 400 30px/1 var(--font-display);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: var(--sub-caps);
+  letter-spacing: var(--sub-caps-tracking);
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nav a:hover,
+.nav a[aria-current="page"] {
+  color: var(--accent-text);
+}
+
+.main {
+  flex: 1;
+}
+
+.footer {
+  margin-top: var(--space-6);
+  background: var(--ground-deep);
+  border-top: 4px solid var(--band);
+}
+
+.footerInner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+}
+
+.footerLabel {
+  margin: 0 0 var(--space-1);
+  font: var(--sub-caps);
+  letter-spacing: var(--sub-caps-tracking);
+  text-transform: uppercase;
+}
+
+.footerText {
+  margin: 0;
+  font: var(--body-sm);
+  color: var(--ink-soft);
+}
+
+.footerText a {
+  color: var(--link);
+}
+
+.footerBottom {
+  padding-block: var(--space-2) var(--space-4);
+  font: var(--body-sm);
+  color: var(--ink-soft);
+}

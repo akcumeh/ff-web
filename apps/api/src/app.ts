@@ -5,10 +5,13 @@ import cors from "cors";
 import type { HealthResponse } from "@ff/shared";
 import { currentAdmin, requireAdmin, type AuthDeps } from "./lib/auth.ts";
 import { errorHandler, notFound } from "./lib/errors.ts";
+import { catalogueRouter } from "./routes/catalogue.ts";
+import type { Catalogue } from "./services/catalogue.ts";
 
 export type AppDeps = {
   allowedOrigins: string[];
   auth: AuthDeps;
+  catalogue: Catalogue;
 };
 
 export function createApp(deps: AppDeps) {
@@ -38,6 +41,8 @@ export function createApp(deps: AppDeps) {
     const body: HealthResponse = { ok: true, service: "ff-api", time: new Date().toISOString() };
     res.json(body);
   });
+
+  app.use("/suits", catalogueRouter(deps.catalogue));
 
   const admin = Router();
   admin.use(requireAdmin(deps.auth));

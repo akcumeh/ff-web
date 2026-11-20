@@ -1,0 +1,109 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+}
+
+.media {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.figure {
+  margin: 0;
+  background: var(--highlight);
+}
+
+.photo {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 80vh;
+  margin-inline: auto;
+}
+
+.caption {
+  padding: var(--space-1) var(--space-2);
+  background: var(--ground);
+  font: var(--body-sm);
+  color: var(--ink-soft);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  margin: var(--space-2) 0 0;
+  font: var(--sub-caps);
+  letter-spacing: var(--sub-caps-tracking);
+  text-transform: uppercase;
+}
+
+.colours {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.colourRow {
+  display: grid;
+  grid-template-columns: 24px 100px 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.colourName {
+  font: var(--body-md);
+}
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.size,
+.sizeOut {
+  min-width: 40px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  text-align: center;
+  font: var(--body-sm);
+}
+
+.sizeOut {
+  color: var(--ink-soft);
+  text-decoration: line-through;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
