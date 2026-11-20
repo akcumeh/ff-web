@@ -39,4 +39,4 @@ CI runs the same three on every push and pull request.
 ## Notes
 
 - `apps/api` runs TypeScript directly with Node's built-in type stripping, so imports use `.ts` extensions and only erasable syntax is allowed (no `enum`, no `namespace`).
-- API tests use the built-in `node:test` runner. No extra test library.
+- API tests use Vitest and Supertest.

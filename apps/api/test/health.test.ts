@@ -1,33 +1,18 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import type { AddressInfo } from "node:net";
+import { describe, expect, it } from "vitest";
+import request from "supertest";
 import { HealthResponse } from "@ff/shared";
 import { createApp } from "../src/app.ts";
 
-async function withServer(fn: (base: string) => Promise<void>) {
-  const server = createApp().listen(0);
-  await new Promise<void>((resolve) => server.once("listening", resolve));
-  const { port } = server.address() as AddressInfo;
-  try {
-    await fn(`http://127.0.0.1:${port}`);
-  } finally {
-    await new Promise<void>((resolve) => server.close(() => resolve()));
-  }
-}
-
-test("GET /health answers with the shared schema", async () => {
-  await withServer(async (base) => {
-    const res = await fetch(`${base}/health`);
-    assert.equal(res.status, 200);
-    const parsed = HealthResponse.safeParse(await res.json());
-    assert.ok(parsed.success, "body matches HealthResponse");
+describe("GET /health", () => {
+  it("answers with the shared schema", async () => {
+    const res = await request(createApp()).get("/health");
+    expect(res.status).toBe(200);
+    expect(HealthResponse.safeParse(res.body).success).toBe(true);
   });
-});
 
-test("unknown routes answer 404 JSON", async () => {
-  await withServer(async (base) => {
-    const res = await fetch(`${base}/nope`);
-    assert.equal(res.status, 404);
-    assert.deepEqual(await res.json(), { error: "not_found" });
+  it("answers 404 JSON for unknown routes", async () => {
+    const res = await request(createApp()).get("/nope");
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: "not_found" });
   });
 });

@@ -2,7 +2,7 @@
   "name": "@ff/tokens",
   "version": "0.0.0",
   "private": true,
-  "description": "Frankie Fabrics design tokens as CSS variables. Source of truth: docs/design-system/tokens.md",
+  "description": "Frankie Suits design tokens (design system v0.2) as CSS variables",
   "exports": {
     "./tokens.css": "./tokens.css"
   },

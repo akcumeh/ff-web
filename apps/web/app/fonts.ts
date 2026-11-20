@@ -1,6 +1,5 @@
-import { Albert_Sans, Alfa_Slab_One, Cormorant_Garamond, Tenor_Sans } from "next/font/google";
+import { Albert_Sans, Cormorant_Garamond, Tenor_Sans } from "next/font/google";
 
-// Body font in both looks. Weights match body-lead (300), body-md/sm (400) and body-figure (500).
 export const albertSans = Albert_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
@@ -16,13 +15,6 @@ export const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
-export const alfaSlab = Alfa_Slab_One({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--nf-alfa",
-  display: "swap",
-});
-
 export const tenor = Tenor_Sans({
   subsets: ["latin"],
   weight: "400",
@@ -30,4 +22,4 @@ export const tenor = Tenor_Sans({
   display: "swap",
 });
 
-export const fontVariables = [albertSans, cormorant, alfaSlab, tenor].map((f) => f.variable).join(" ");
+export const fontVariables = [albertSans, cormorant, tenor].map((f) => f.variable).join(" ");

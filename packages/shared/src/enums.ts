@@ -8,7 +8,7 @@ export const SuitStatus = z.enum(["draft", "review", "published", "archived"]);
 export type SuitStatus = z.infer<typeof SuitStatus>;
 
 /** Theme ids from the design system. Set on <html data-theme="...">. */
-export const ThemeId = z.enum(["sunlit", "workshop"]);
+export const ThemeId = z.enum(["light", "dark"]);
 export type ThemeId = z.infer<typeof ThemeId>;
 
 export const styleLabel: Record<SuitStyle, string> = {

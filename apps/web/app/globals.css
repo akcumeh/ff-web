@@ -2,9 +2,8 @@
 
 /* Point the token families at the self-hosted next/font files. */
 :root {
-  --font-display-a: var(--nf-cormorant), Garamond, "Times New Roman", serif;
-  --font-display-b: var(--nf-alfa), Rockwell, "Arial Black", serif;
-  --font-body: var(--nf-albert), system-ui, sans-serif;
+  --font-display: var(--nf-cormorant), Garamond, "Times New Roman", serif;
+  --font-body: var(--nf-albert), system-ui, "Segoe UI", sans-serif;
   --font-sub: var(--nf-tenor), "Gill Sans", system-ui, sans-serif;
 }
 
