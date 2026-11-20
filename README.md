@@ -40,3 +40,17 @@ CI runs the same three on every push and pull request.
 
 - `apps/api` runs TypeScript directly with Node's built-in type stripping, so imports use `.ts` extensions and only erasable syntax is allowed (no `enum`, no `namespace`).
 - API tests use Vitest and Supertest.
+
+## Admin accounts
+
+Nobody can sign up. Add an owner by hand (uses `apps/api/.env`, asks for a password):
+
+```bash
+npm run add-admin -- owner@example.com
+```
+
+If an owner loses the phone with their authenticator app:
+
+```bash
+npm run reset-mfa -- owner@example.com
+```
