@@ -1,0 +1,10 @@
+{
+  "name": "@ff/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Frankie Fabrics design tokens as CSS variables. Source of truth: docs/design-system/tokens.md",
+  "exports": {
+    "./tokens.css": "./tokens.css"
+  },
+  "files": ["tokens.css"]
+}

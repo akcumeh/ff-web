@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# env files (only the .example ones are committed)
+.env
+.env.*
+!.env.example
+
+# vercel and supabase local state
+.vercel/
+supabase/.temp/
+supabase/.branches/
+
+# os and editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs
+*.log

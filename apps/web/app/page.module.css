@@ -1,0 +1,41 @@
+.main {
+  min-height: 100dvh;
+  padding: var(--sa-space-6) max(16px, var(--sa-space-5));
+  max-width: 1240px;
+  margin-inline: auto;
+}
+
+.wordmark {
+  margin: 0 0 var(--sa-space-6);
+  font: 400 30px/1 var(--font-display-a);
+}
+
+.headline {
+  margin: 0 0 var(--sa-space-3);
+  font: var(--sa-h1);
+  letter-spacing: var(--sa-h1-tracking);
+  max-width: 14ch;
+}
+
+.lead {
+  margin: 0 0 var(--sa-space-4);
+  font: var(--body-lead);
+  max-width: 40ch;
+}
+
+.note {
+  margin: 0;
+  padding-top: var(--sa-space-2);
+  border-top: 1px solid var(--line);
+  font: var(--sub-md);
+  letter-spacing: var(--sub-md-tracking);
+  color: var(--ink-soft);
+  max-width: 40ch;
+}
+
+@media (max-width: 640px) {
+  .headline {
+    font-size: 40px;
+    line-height: 44px;
+  }
+}
