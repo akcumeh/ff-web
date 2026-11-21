@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { IMAGE_TYPES, MAX_UPLOAD_BYTES, type AdminSuitDetail, type Batch, type UploadSignResponse } from "@ff/shared";
 import { adminCall } from "@/lib/admin-client";
-import { VariantsField, draftsToInput, type VariantDraft } from "../VariantsField";
+import { VariantsField, draftsToInput, emptyDraft, type VariantDraft } from "../VariantsField";
 import styles from "../../admin.module.css";
 
 export function NewSuitForm({ batches }: { batches: Batch[] }) {
@@ -16,7 +16,7 @@ export function NewSuitForm({ batches }: { batches: Batch[] }) {
   const [title, setTitle] = useState("London style");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [variants, setVariants] = useState<VariantDraft[]>([{ colour: "", hex: "", sizes: "" }]);
+  const [variants, setVariants] = useState<VariantDraft[]>([emptyDraft()]);
   const [files, setFiles] = useState<File[]>([]);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [status, setStatus] = useState("");

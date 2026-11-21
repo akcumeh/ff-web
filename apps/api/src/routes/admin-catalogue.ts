@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { BatchCreate, PublishInput, SelectImage, SuitCreate, SuitPatch, SuitStatus, UploadSignRequest } from "@ff/shared";
+import { BatchCreate, PublishInput, SelectImageChecked, SuitCreate, SuitPatch, SuitStatus, UploadSignRequest } from "@ff/shared";
 import { currentAdmin } from "../lib/auth.ts";
 import { HttpError } from "../lib/errors.ts";
 import type { AdminCatalogue } from "../services/admin-catalogue.ts";
@@ -55,7 +55,7 @@ export function adminCatalogueRouter(catalogue: AdminCatalogue): Router {
 
   r.post("/suits/:id/select-image", async (req, res) => {
     const { id } = parse(IdParam, req.params);
-    res.json(await catalogue.selectImage(currentAdmin(res).adminId, id, parse(SelectImage, req.body)));
+    res.json(await catalogue.selectImage(currentAdmin(res).adminId, id, parse(SelectImageChecked, req.body)));
   });
 
   r.post("/suits/:id/publish", async (req, res) => {

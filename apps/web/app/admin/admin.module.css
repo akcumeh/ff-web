@@ -295,3 +295,39 @@
   font: var(--body-sm);
   color: var(--ink);
 }
+
+.variantRow {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.sizeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: var(--space-1);
+}
+
+.sizeChoice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  font: var(--body-md);
+  cursor: pointer;
+}
+
+.sizeChoice:has(input:checked) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.sizeChoice input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--on-accent);
+}

@@ -90,12 +90,13 @@ const ONE_YEAR = "31536000";
 function expandVariants(suitId: string, variants: VariantInput[]) {
   const seen = new Set<string>();
   const rows: { suit_id: string; colour: string; colour_hex: string | null; size: string; in_stock: boolean }[] = [];
-  for (const v of variants) {
+  for (const [i, v] of variants.entries()) {
+    const colour = v.colour?.trim() || `Colour ${i + 1}`;
     for (const size of v.sizes) {
-      const key = `${v.colour.toLowerCase()}|${size.toLowerCase()}`;
+      const key = `${colour.toLowerCase()}|${size.toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      rows.push({ suit_id: suitId, colour: v.colour, colour_hex: v.colour_hex ?? null, size, in_stock: true });
+      rows.push({ suit_id: suitId, colour, colour_hex: v.colour_hex ?? null, size, in_stock: true });
     }
   }
   return rows;
@@ -147,6 +148,29 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
 
   async function refreshPublic(s: AdminSuitRow) {
     await deps.revalidate(["suits", `suit:${s.slug}`]);
+  }
+
+  async function publishCopy(suitId: string, source: ImageRecord, kind: "final" | "detail", isCover: boolean) {
+    const data = await storage.download(source.bucket, source.storage_path);
+    const set = await makePublicSet(data);
+    const id = randomUUID();
+    const base = `${suitId}/${id}`;
+    for (const f of set.files) {
+      await storage.upload("public-suits", `${base}-${f.w}.webp`, f.data, "image/webp", ONE_YEAR);
+    }
+    await repo.insertImage(suitId, {
+      id,
+      kind,
+      bucket: "public-suits",
+      storage_path: base,
+      widths: set.files.map((f) => f.w).sort((a, b) => a - b),
+      width: set.width,
+      height: set.height,
+      blur_data: set.blur,
+      alt_text: source.alt_text,
+      is_cover: isCover,
+      generation_id: kind === "final" ? source.generation_id : null,
+    });
   }
 
   async function createBatch(adminId: string, input: { label: string; arrived_on: string }): Promise<Batch> {
@@ -286,8 +310,10 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
 
     async selectImage(adminId: string, id: string, input: SelectImage): Promise<AdminSuitDetail> {
       const s = await mustGet(id);
-      const img = s.images.find((i) => i.id === input.original_image_id && i.kind === "original");
-      if (!img) throw new HttpError(404, "not_found", "That photo is not one of this suit's own photos.");
+      const wantedId = input.candidate_image_id ?? input.original_image_id;
+      const wantedKind = input.candidate_image_id ? "candidate" : "original";
+      const img = s.images.find((i) => i.id === wantedId && i.kind === wantedKind);
+      if (!img) throw new HttpError(404, "not_found", "That photo is not part of this suit.");
       await repo.clearCover(id);
       await repo.updateImage(img.id, { alt_text: input.alt_text, is_cover: true });
       await deps.audit({ adminId, action: "image.select", targetType: "suit", targetId: id, detail: { image: img.id } });
@@ -305,31 +331,23 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
       if (failures.length || !cover) throw new HttpError(422, "rule_failed", "This suit is not ready to publish.", failures);
 
       if (cover.kind !== "final") {
-        const source = await storage.download(cover.bucket, cover.storage_path);
-        const set = await makePublicSet(source);
-        const finalId = randomUUID();
-        const base = `${s.id}/${finalId}`;
-        for (const f of set.files) {
-          await storage.upload("public-suits", `${base}-${f.w}.webp`, f.data, "image/webp", ONE_YEAR);
-        }
-        const oldFinals = s.images.filter((i) => i.kind === "final" || i.kind === "detail");
+        const oldPublic = s.images.filter((i) => i.kind === "final" || i.kind === "detail");
         await repo.clearCover(s.id);
-        await repo.insertImage(s.id, {
-          id: finalId,
-          kind: "final",
-          bucket: "public-suits",
-          storage_path: base,
-          widths: set.files.map((f) => f.w).sort((a, b) => a - b),
-          width: set.width,
-          height: set.height,
-          blur_data: set.blur,
-          alt_text: cover.alt_text,
-          is_cover: true,
-          generation_id: cover.generation_id,
-        });
-        if (oldFinals.length) {
-          await repo.deleteImages(oldFinals.map((i) => i.id));
-          await storage.remove("public-suits", oldFinals.flatMap(publicPaths)).catch(() => {});
+        await publishCopy(s.id, cover, "final", true);
+
+        const firstOriginal = s.images.find((i) => i.kind === "original");
+        if (cover.kind === "candidate" && firstOriginal) {
+          await publishCopy(s.id, { ...firstOriginal, alt_text: firstOriginal.alt_text ?? `Real photo of the ${s.title}` }, "detail", false);
+        }
+
+        if (oldPublic.length) {
+          await repo.deleteImages(oldPublic.map((i) => i.id));
+          await storage.remove("public-suits", oldPublic.flatMap(publicPaths)).catch(() => {});
+        }
+        const candidates = s.images.filter((i) => i.kind === "candidate");
+        if (candidates.length) {
+          await repo.deleteImages(candidates.map((i) => i.id));
+          await storage.remove("candidates", candidates.map((i) => i.storage_path)).catch(() => {});
         }
       }
 

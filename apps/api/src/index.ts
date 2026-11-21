@@ -7,9 +7,19 @@ import { supabaseAdminCatalogueRepo } from "./repos/admin-catalogue-repo.ts";
 import { createAdminCatalogue } from "./services/admin-catalogue.ts";
 import { supabaseStorage } from "./lib/storage.ts";
 import { revalidator, supabaseAudit } from "./lib/side-effects.ts";
+import { supabaseGenerationRepo } from "./repos/generation-repo.ts";
+import { createGeneration } from "./services/generation.ts";
+import { createGemini, GeminiFailure, type GeminiPort } from "./services/gemini.ts";
 
 const config = loadConfig();
 const supabase = createSupabase(config);
+const audit = supabaseAudit(supabase);
+const catalogueRepo = supabaseAdminCatalogueRepo(supabase);
+const storage = supabaseStorage(supabase);
+const noKey = async (): Promise<never> => {
+  throw new GeminiFailure("failed", "no_api_key");
+};
+const gemini: GeminiPort = config.googleApiKey ? createGemini({ apiKey: config.googleApiKey }) : { observe: noKey, draw: noKey };
 
 const app = createApp({
   allowedOrigins: config.allowedOrigins,
@@ -19,11 +29,12 @@ const app = createApp({
     `${config.supabaseUrl}/storage/v1/object/public/public-suits/`,
   ),
   adminCatalogue: createAdminCatalogue({
-    repo: supabaseAdminCatalogueRepo(supabase),
-    storage: supabaseStorage(supabase),
-    audit: supabaseAudit(supabase),
+    repo: catalogueRepo,
+    storage,
+    audit,
     revalidate: revalidator(config.siteUrl, config.revalidateSecret),
   }),
+  generation: createGeneration({ gen: supabaseGenerationRepo(supabase), catalogue: catalogueRepo, storage, gemini, audit }),
 });
 
 export { config };

@@ -35,7 +35,7 @@ export const BatchCreate = z.strictObject({
 });
 
 export const VariantInput = z.strictObject({
-  colour: z.string().trim().min(1, "Name the colour").max(30),
+  colour: z.string().trim().max(30).optional(),
   colour_hex: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, "Use a colour like #1d2b4a")
@@ -67,10 +67,12 @@ export const SuitPatch = z.strictObject({
 export type SuitPatch = z.infer<typeof SuitPatch>;
 
 export const SelectImage = z.strictObject({
-  original_image_id: z.uuid(),
+  original_image_id: z.uuid().optional(),
+  candidate_image_id: z.uuid().optional(),
   alt_text: z.string().trim().min(1, "Describe the photo").max(125, "Keep it to 125 characters"),
 });
 export type SelectImage = z.infer<typeof SelectImage>;
+export const SelectImageChecked = SelectImage.refine((v) => Boolean(v.original_image_id) !== Boolean(v.candidate_image_id), { message: "Pick one photo", path: ["image"] });
 
 export const PublishInput = z.strictObject({ repost: z.boolean().optional() });
 

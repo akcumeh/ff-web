@@ -3,6 +3,8 @@ import type { AuthDeps, TokenClaims } from "../src/lib/auth.ts";
 import { createCatalogue, type CatalogueRepo, type SuitRow } from "../src/services/catalogue.ts";
 import { createAdminCatalogue, type AdminCatalogue } from "../src/services/admin-catalogue.ts";
 import { memoryRepo, memoryStorage, recorder } from "./admin-fakes.ts";
+import { createGeneration, type Generation } from "../src/services/generation.ts";
+import { memoryGenRepo, scriptedGemini } from "./ai-fakes.ts";
 
 export const ADMIN_ID = "11111111-1111-4111-8111-111111111111";
 export const STRANGER_ID = "22222222-2222-4222-8222-222222222222";
@@ -73,6 +75,8 @@ export type FakeOptions = {
   totpUsers?: string[];
   now?: Date;
   adminCatalogue?: AdminCatalogue;
+  generation?: Generation;
+  background?: (p: Promise<unknown>) => void;
 };
 
 export function fakeAuth(opts: FakeOptions = {}): AuthDeps {
@@ -100,5 +104,9 @@ export function testApp(opts: FakeOptions = {}) {
     adminCatalogue:
       opts.adminCatalogue ??
       createAdminCatalogue({ repo: memoryRepo().repo, storage: memoryStorage().storage, ...recorder() }),
+    generation:
+      opts.generation ??
+      createGeneration({ gen: memoryGenRepo().repo, catalogue: memoryRepo().repo, storage: memoryStorage().storage, gemini: scriptedGemini().gemini, audit: recorder().audit }),
+    background: opts.background ?? (() => {}),
   });
 }

@@ -5,13 +5,14 @@ import { useState, type FormEvent } from "react";
 import { formatNaira, type AdminSuitDetail } from "@ff/shared";
 import { adminCall } from "@/lib/admin-client";
 import { VariantsField, draftsToInput, type VariantDraft } from "../VariantsField";
+import { AiPanel } from "./AiPanel";
 import styles from "../../admin.module.css";
 
 function toDrafts(suit: AdminSuitDetail): VariantDraft[] {
   const map = new Map<string, VariantDraft>();
   for (const v of suit.variants) {
-    const d = map.get(v.colour) ?? { colour: v.colour, hex: v.colour_hex ?? "", sizes: "" };
-    d.sizes = d.sizes ? `${d.sizes}, ${v.size}` : v.size;
+    const d = map.get(v.colour) ?? { colour: v.colour, hex: v.colour_hex ?? "", sizes: [] };
+    d.sizes.push(v.size);
     map.set(v.colour, d);
   }
   return [...map.values()];
@@ -66,20 +67,23 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
   const toggleStock = (id: string, inStock: boolean) =>
     run("Saving.", () => adminCall("PATCH", `/suits/${suit.id}`, { variant_updates: [{ id, in_stock: inStock }] }), "Saved.");
 
-  const chooseCover = (imageId: string) => {
-    const alt = (alts[imageId] ?? "").trim();
+  const altFor = (img: { id: string; alt_text: string | null }) => alts[img.id] ?? img.alt_text ?? "";
+
+  const chooseCover = (img: { id: string; kind: string; alt_text: string | null }) => {
+    const alt = altFor(img).trim();
     if (!alt) {
-      setFields({ [`alt-${imageId}`]: "Describe the photo first, for example: Navy London style suit on a hanger" });
+      setFields({ [`alt-${img.id}`]: "Describe the photo first, for example: Navy London style suit on a hanger" });
       return;
     }
-    void run("Choosing the photo.", () => adminCall("POST", `/suits/${suit.id}/select-image`, { original_image_id: imageId, alt_text: alt }), "Photo chosen.");
+    const ref = img.kind === "candidate" ? { candidate_image_id: img.id } : { original_image_id: img.id };
+    void run("Choosing the photo.", () => adminCall("POST", `/suits/${suit.id}/select-image`, { ...ref, alt_text: alt }), "Photo chosen.");
   };
 
   const publish = () => run("Publishing. This can take a few seconds.", () => adminCall("POST", `/suits/${suit.id}/publish`, {}), "Published. It is on the site now.");
   const archive = () => run("Taking it down.", () => adminCall("POST", `/suits/${suit.id}/archive`, {}), "Taken down from the site.");
 
   const fieldError = (key: string) => fields[key] ?? Object.entries(fields).find(([k]) => k.startsWith(`${key}.`))?.[1];
-  const originals = suit.images.filter((i) => i.kind === "original");
+  const choosable = suit.images.filter((i) => i.kind === "original" || i.kind === "candidate");
   const finalCover = suit.images.find((i) => i.kind === "final" && i.is_cover);
 
   return (
@@ -104,6 +108,8 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
         )}
       </div>
 
+      <AiPanel suitId={suit.id} hasOriginals={choosable.some((i) => i.kind === "original")} />
+
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Photo on the site</legend>
         {finalCover && (
@@ -116,15 +122,16 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
               <figcaption className={styles.hint}>On the site now</figcaption>
             </figure>
           ))}
-          {originals.map((img) => (
+          {choosable.map((img) => (
             <figure key={img.id} className={styles.thumb} data-cover={img.is_cover}>
-              <img src={img.url} alt={img.alt_text || "Uploaded photo"} />
+              <img src={img.url} alt={img.alt_text || (img.kind === "candidate" ? "AI draft" : "Uploaded photo")} />
+              <figcaption className={styles.hint}>{img.kind === "candidate" ? "AI draft" : "Your photo"}</figcaption>
               <label htmlFor={`alt-${img.id}`} className={styles.label}>Describe this photo</label>
               <input
                 id={`alt-${img.id}`}
                 className={styles.input}
                 maxLength={125}
-                value={alts[img.id] ?? ""}
+                value={altFor(img)}
                 onChange={(e) => setAlts({ ...alts, [img.id]: e.target.value })}
                 aria-invalid={Boolean(fields[`alt-${img.id}`])}
                 aria-describedby={fields[`alt-${img.id}`] ? `alt-${img.id}-error` : undefined}
@@ -133,7 +140,7 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
               {img.is_cover ? (
                 <span className={styles.hint}>Chosen. Publish to show it.</span>
               ) : (
-                <button type="button" className={styles.secondary} onClick={() => chooseCover(img.id)} disabled={busy}>Use this photo</button>
+                <button type="button" className={styles.secondary} onClick={() => chooseCover(img)} disabled={busy}>Use this photo</button>
               )}
             </figure>
           ))}

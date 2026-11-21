@@ -7,10 +7,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: { root: repoRoot },
   outputFileTracingRoot: repoRoot,
+  allowedDevOrigins: ["*.*.*.*", "*.local"],
 };
-
-module.exports = {
-    allowedDevOrigins: ['192.168.1.8'],
-}
 
 export default nextConfig;

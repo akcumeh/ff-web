@@ -9,12 +9,16 @@ import { catalogueRouter } from "./routes/catalogue.ts";
 import type { Catalogue } from "./services/catalogue.ts";
 import { adminCatalogueRouter } from "./routes/admin-catalogue.ts";
 import type { AdminCatalogue } from "./services/admin-catalogue.ts";
+import { adminAiRouter } from "./routes/admin-ai.ts";
+import type { Generation } from "./services/generation.ts";
 
 export type AppDeps = {
   allowedOrigins: string[];
   auth: AuthDeps;
   catalogue: Catalogue;
   adminCatalogue: AdminCatalogue;
+  generation: Generation;
+  background?: (p: Promise<unknown>) => void;
 };
 
 export function createApp(deps: AppDeps) {
@@ -57,6 +61,7 @@ export function createApp(deps: AppDeps) {
     res.json(currentAdmin(res));
   });
   admin.use(adminCatalogueRouter(deps.adminCatalogue));
+  admin.use(adminAiRouter(deps.generation, deps.background));
   app.use("/admin", admin);
 
   app.use(notFound);

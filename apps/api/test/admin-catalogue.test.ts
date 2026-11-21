@@ -182,6 +182,15 @@ describe("admin catalogue", () => {
     expect(after.some((v) => v.colour === "Navy" && v.size === "12")).toBe(false);
   });
 
+  it("names unnamed colours Colour 1, Colour 2 so a swatch and sizes are enough", async () => {
+    const body = { ...suitBody(await uploadPhotos(1)), variants: [{ colour_hex: "#5b2a6e", sizes: ["40", "42"] }, { sizes: ["44"] }] };
+    const res = await request(env.app).post("/admin/suits").set(AUTH).send(body);
+    expect(res.status).toBe(201);
+    const variants = AdminSuitDetail.parse(res.body).variants;
+    expect(variants.map((v) => `${v.colour} ${v.size}`).sort()).toEqual(["Colour 1 40", "Colour 1 42", "Colour 2 44"]);
+    expect(variants.find((v) => v.colour === "Colour 1")?.colour_hex).toBe("#5b2a6e");
+  });
+
   it("404 for an unknown suit id and 400 for a malformed one", async () => {
     expect((await request(env.app).get("/admin/suits/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa").set(AUTH)).status).toBe(404);
     expect((await request(env.app).get("/admin/suits/not-a-uuid").set(AUTH)).status).toBe(400);
