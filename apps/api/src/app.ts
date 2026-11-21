@@ -7,11 +7,14 @@ import { currentAdmin, requireAdmin, type AuthDeps } from "./lib/auth.ts";
 import { errorHandler, notFound } from "./lib/errors.ts";
 import { catalogueRouter } from "./routes/catalogue.ts";
 import type { Catalogue } from "./services/catalogue.ts";
+import { adminCatalogueRouter } from "./routes/admin-catalogue.ts";
+import type { AdminCatalogue } from "./services/admin-catalogue.ts";
 
 export type AppDeps = {
   allowedOrigins: string[];
   auth: AuthDeps;
   catalogue: Catalogue;
+  adminCatalogue: AdminCatalogue;
 };
 
 export function createApp(deps: AppDeps) {
@@ -53,6 +56,7 @@ export function createApp(deps: AppDeps) {
   admin.get("/me", (_req, res) => {
     res.json(currentAdmin(res));
   });
+  admin.use(adminCatalogueRouter(deps.adminCatalogue));
   app.use("/admin", admin);
 
   app.use(notFound);

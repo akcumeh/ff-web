@@ -1,0 +1,38 @@
+import { notFound, redirect } from "next/navigation";
+import { AdminSuitDetail } from "@ff/shared";
+import { adminGet } from "@/lib/admin-api";
+import { serverEnv } from "@/lib/server-env";
+import { AdminNav } from "../../AdminNav";
+import { SuitEditor } from "./SuitEditor";
+import styles from "../../admin.module.css";
+
+export const dynamic = "force-dynamic";
+
+const STATUS_LABEL = { draft: "Draft", review: "Review", published: "On the site", archived: "Taken down" } as const;
+
+export default async function EditSuitPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
+  const result = await adminGet(`/suits/${id}`, AdminSuitDetail);
+  if (result.kind === "error" && result.status === 401) redirect("/admin/login");
+  if (result.kind === "error" && result.status === 404) notFound();
+
+  return (
+    <main id="main" className={styles.page}>
+      <p className={styles.wordmark}>Frankie Suits</p>
+      <AdminNav />
+      {result.kind === "ok" ? (
+        <>
+          <h1 className={styles.title}>{result.data.ref}: {result.data.title}</h1>
+          <p className={styles.lead}>
+            <span className={styles.status}>{STATUS_LABEL[result.data.status]}</span>
+            {result.data.batch_label ? ` ${result.data.batch_label}` : ""}
+          </p>
+          <SuitEditor key={result.data.id} suit={result.data} siteUrl={serverEnv().NEXT_PUBLIC_SITE_URL} />
+        </>
+      ) : (
+        <p className={styles.error}>{result.kind === "offline" ? "The API is not answering. Reload in a moment." : result.message}</p>
+      )}
+    </main>
+  );
+}

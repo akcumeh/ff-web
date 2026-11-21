@@ -5,3 +5,4 @@ export * from "./error.ts";
 export * from "./auth.ts";
 export * from "./suits.ts";
 export * from "./whatsapp.ts";
+export * from "./admin.ts";

@@ -4,6 +4,7 @@ const Env = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   SITE_URL: z.url().default("http://localhost:3000"),
   SUPABASE_DB_URL: z.url(),
+  REVALIDATE_SECRET: z.string().min(24, "use 24 or more random characters").optional(),
   SUPABASE_SEC_KEY: z.string().startsWith("sb_secret_", "must be the new sb_secret_ key, not a legacy key"),
 });
 
@@ -13,6 +14,7 @@ export type Config = {
   allowedOrigins: string[];
   supabaseUrl: string;
   supabaseSecretKey: string;
+  revalidateSecret: string | undefined;
 };
 
 function wwwTwin(origin: string): string {
@@ -36,5 +38,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     allowedOrigins: isLocal ? [siteOrigin] : [siteOrigin, wwwTwin(siteOrigin)],
     supabaseUrl: e.SUPABASE_DB_URL.replace(/\/+$/, ""),
     supabaseSecretKey: e.SUPABASE_SEC_KEY,
+    revalidateSecret: e.REVALIDATE_SECRET,
   };
 }

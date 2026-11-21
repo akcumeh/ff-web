@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fetchMe } from "@/lib/admin-api";
 import { signOut } from "./login/actions";
+import { AdminNav } from "./AdminNav";
 import styles from "./admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -18,11 +19,13 @@ export default async function AdminHomePage() {
 
       {result.kind === "ok" && (
         <>
+          <AdminNav />
           <h1 className={styles.title}>Admin</h1>
           <p className={styles.lead}>Signed in as {result.me.email}.</p>
-          <p className={styles.hint}>
-            Authenticator app: {result.me.mfaEnabled ? "on" : "off"}.{" "}
-            <Link href="/admin/settings" className={styles.link}>Settings</Link>
+          <p className={styles.hint}>Authenticator app: {result.me.mfaEnabled ? "on" : "off"}.</p>
+          <p className={styles.lead}>
+            <Link href="/admin/suits/new" className={styles.link}>Add a new suit</Link> or{" "}
+            <Link href="/admin/suits" className={styles.link}>see all suits</Link>.
           </p>
         </>
       )}

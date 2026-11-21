@@ -1,6 +1,8 @@
 import { createApp } from "../src/app.ts";
 import type { AuthDeps, TokenClaims } from "../src/lib/auth.ts";
 import { createCatalogue, type CatalogueRepo, type SuitRow } from "../src/services/catalogue.ts";
+import { createAdminCatalogue, type AdminCatalogue } from "../src/services/admin-catalogue.ts";
+import { memoryRepo, memoryStorage, recorder } from "./admin-fakes.ts";
 
 export const ADMIN_ID = "11111111-1111-4111-8111-111111111111";
 export const STRANGER_ID = "22222222-2222-4222-8222-222222222222";
@@ -70,6 +72,7 @@ export type FakeOptions = {
   tokens?: Record<string, TokenClaims>;
   totpUsers?: string[];
   now?: Date;
+  adminCatalogue?: AdminCatalogue;
 };
 
 export function fakeAuth(opts: FakeOptions = {}): AuthDeps {
@@ -94,5 +97,8 @@ export function testApp(opts: FakeOptions = {}) {
     allowedOrigins: [SITE],
     auth: fakeAuth(opts),
     catalogue: createCatalogue(fakeCatalogueRepo(), IMG_BASE, () => now),
+    adminCatalogue:
+      opts.adminCatalogue ??
+      createAdminCatalogue({ repo: memoryRepo().repo, storage: memoryStorage().storage, ...recorder() }),
   });
 }
