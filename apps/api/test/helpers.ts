@@ -5,6 +5,8 @@ import { createAdminCatalogue, type AdminCatalogue } from "../src/services/admin
 import { memoryRepo, memoryStorage, recorder } from "./admin-fakes.ts";
 import { createGeneration, type Generation } from "../src/services/generation.ts";
 import { memoryGenRepo, scriptedGemini } from "./ai-fakes.ts";
+import { createChannels, type Channels } from "../src/services/channels.ts";
+import { memoryChannelRepo } from "./channel-fakes.ts";
 
 export const ADMIN_ID = "11111111-1111-4111-8111-111111111111";
 export const STRANGER_ID = "22222222-2222-4222-8222-222222222222";
@@ -76,6 +78,8 @@ export type FakeOptions = {
   now?: Date;
   adminCatalogue?: AdminCatalogue;
   generation?: Generation;
+  channels?: Channels;
+  suitLookup?: { getSuit: ReturnType<typeof memoryRepo>["repo"]["getSuit"] };
   background?: (p: Promise<unknown>) => void;
 };
 
@@ -108,5 +112,9 @@ export function testApp(opts: FakeOptions = {}) {
       opts.generation ??
       createGeneration({ gen: memoryGenRepo().repo, catalogue: memoryRepo().repo, storage: memoryStorage().storage, gemini: scriptedGemini().gemini, audit: recorder().audit }),
     background: opts.background ?? (() => {}),
+    channels:
+      opts.channels ??
+      createChannels({ repo: memoryChannelRepo().repo, storage: memoryStorage().storage, telegram: null, channelId: undefined, alertChatId: undefined, siteUrl: SITE, audit: recorder().audit }),
+    suitLookup: opts.suitLookup ?? memoryRepo().repo,
   });
 }

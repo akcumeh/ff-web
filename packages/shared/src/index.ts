@@ -7,3 +7,4 @@ export * from "./suits.ts";
 export * from "./whatsapp.ts";
 export * from "./admin.ts";
 export * from "./ai.ts";
+export * from "./caption.ts";

@@ -331,3 +331,40 @@
   height: 18px;
   accent-color: var(--on-accent);
 }
+
+.packList {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 720px;
+}
+
+.packCard {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.packImage {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  background: var(--surface);
+}
+
+.badge {
+  padding: 2px 8px;
+  border: 1px solid var(--accent-text);
+  color: var(--accent-text);
+  font: var(--sub-caps);
+  letter-spacing: var(--sub-caps-tracking);
+  text-transform: uppercase;
+}
+
+.navCount {
+  margin-left: 6px;
+  padding: 0 6px;
+  background: var(--accent);
+  color: var(--on-accent);
+}

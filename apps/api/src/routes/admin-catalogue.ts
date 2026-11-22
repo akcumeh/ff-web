@@ -60,8 +60,8 @@ export function adminCatalogueRouter(catalogue: AdminCatalogue): Router {
 
   r.post("/suits/:id/publish", async (req, res) => {
     const { id } = parse(IdParam, req.params);
-    parse(PublishInput, req.body);
-    res.json(await catalogue.publish(currentAdmin(res).adminId, id));
+    const { repost } = parse(PublishInput, req.body);
+    res.json(await catalogue.publish(currentAdmin(res).adminId, id, repost ?? false));
   });
 
   r.post("/suits/:id/archive", async (req, res) => {

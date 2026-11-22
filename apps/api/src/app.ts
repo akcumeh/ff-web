@@ -11,6 +11,9 @@ import { adminCatalogueRouter } from "./routes/admin-catalogue.ts";
 import type { AdminCatalogue } from "./services/admin-catalogue.ts";
 import { adminAiRouter } from "./routes/admin-ai.ts";
 import type { Generation } from "./services/generation.ts";
+import { adminChannelsRouter } from "./routes/admin-channels.ts";
+import type { Channels } from "./services/channels.ts";
+import type { AdminCatalogueRepo } from "./services/admin-catalogue.ts";
 
 export type AppDeps = {
   allowedOrigins: string[];
@@ -18,6 +21,8 @@ export type AppDeps = {
   catalogue: Catalogue;
   adminCatalogue: AdminCatalogue;
   generation: Generation;
+  channels: Channels;
+  suitLookup: Pick<AdminCatalogueRepo, "getSuit">;
   background?: (p: Promise<unknown>) => void;
 };
 
@@ -62,6 +67,7 @@ export function createApp(deps: AppDeps) {
   });
   admin.use(adminCatalogueRouter(deps.adminCatalogue));
   admin.use(adminAiRouter(deps.generation, deps.background));
+  admin.use(adminChannelsRouter(deps.channels, deps.suitLookup));
   app.use("/admin", admin);
 
   app.use(notFound);

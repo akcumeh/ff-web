@@ -12,6 +12,7 @@ import type {
   VariantInput,
 } from "@ff/shared";
 import { HttpError } from "../lib/errors.ts";
+import sharp from "sharp";
 import { makePublicSet, normalizeOriginal } from "../lib/images.ts";
 
 export type SuitStatus = "draft" | "review" | "published" | "archived";
@@ -82,6 +83,7 @@ export type AdminCatalogueDeps = {
   storage: StoragePort;
   audit: (e: AuditEntry) => Promise<void>;
   revalidate: (tags: string[]) => Promise<void>;
+  afterPublish?: (suit: AdminSuitRow, repost: boolean) => Promise<{ telegram: string; pack: string }>;
 };
 
 const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
@@ -103,7 +105,7 @@ function expandVariants(suitId: string, variants: VariantInput[]) {
 }
 
 function publicPaths(img: ImageRecord): string[] {
-  return img.widths.map((w) => `${img.storage_path}-${w}.webp`);
+  return [...img.widths.map((w) => `${img.storage_path}-${w}.webp`), `${img.storage_path}-channel.jpg`, `${img.storage_path}-pack.jpg`];
 }
 
 export function createAdminCatalogue(deps: AdminCatalogueDeps) {
@@ -157,6 +159,11 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
     const base = `${suitId}/${id}`;
     for (const f of set.files) {
       await storage.upload("public-suits", `${base}-${f.w}.webp`, f.data, "image/webp", ONE_YEAR);
+    }
+    if (kind === "final") {
+      const jpg = await sharp(data).rotate().resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+      await storage.upload("public-suits", `${base}-channel.jpg`, jpg, "image/jpeg", ONE_YEAR);
+      await storage.upload("public-suits", `${base}-pack.jpg`, jpg, "image/jpeg", ONE_YEAR);
     }
     await repo.insertImage(suitId, {
       id,
@@ -320,7 +327,7 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
       return toDetail(await mustGet(id));
     },
 
-    async publish(adminId: string, id: string): Promise<AdminSuitDetail> {
+    async publish(adminId: string, id: string, repost = false): Promise<AdminSuitDetail & { channels?: { telegram: string; pack: string } }> {
       let s = await mustGet(id);
       const cover = s.images.find((i) => i.is_cover);
       const failures: { path: string; message: string }[] = [];
@@ -355,7 +362,14 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
       s = await mustGet(s.id);
       await refreshPublic(s);
       await deps.audit({ adminId, action: "suit.publish", targetType: "suit", targetId: s.id });
-      return toDetail(s);
+      let channels: { telegram: string; pack: string } | undefined;
+      if (deps.afterPublish) {
+        channels = await deps.afterPublish(s, repost).catch((err) => {
+          console.error(JSON.stringify({ level: "error", msg: "channel posting failed", suit: s.id, error: String(err) }));
+          return { telegram: "failed", pack: "pending" };
+        });
+      }
+      return { ...(await toDetail(s)), ...(channels ? { channels } : {}) };
     },
 
     async archive(adminId: string, id: string): Promise<AdminSuitDetail> {
