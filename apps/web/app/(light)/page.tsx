@@ -1,11 +1,21 @@
 import Link from "next/link";
 import { getSuits } from "@/lib/catalogue";
+import { buildMetadata } from "@/lib/metadata";
+import { JsonLd, storeJsonLd } from "@/lib/jsonld";
+import { siteUrl } from "@/lib/public-env";
+
 import { contactLink } from "@/lib/contact";
 import { SuitCardLink } from "@/components/site/SuitCardLink";
 import { SuitImage } from "@/components/site/SuitImage";
 import site from "@/components/site/site.module.css";
 import styles from "@/components/site/pages.module.css";
 import cards from "@/components/site/suits.module.css";
+
+export const metadata = buildMetadata({
+  title: "Frankie Suits",
+  description: "Ladies' London and Turkey suits. Wholesale and retail from Martins Street, Lagos Island. Since 2012.",
+  path: "",
+});
 
 const COLLECTIONS = [
   { name: "Church", line: "Skirt suits and long jackets for Sunday service." },
@@ -21,6 +31,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={storeJsonLd(siteUrl())} />
       <section className={`${site.container} ${styles.hero}`} aria-labelledby="home-title">
         <div className={styles.heroText}>
           <h1 id="home-title" className={styles.display}>Ladies&rsquo; London and Turkey suits</h1>

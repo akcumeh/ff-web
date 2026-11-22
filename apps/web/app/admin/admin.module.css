@@ -368,3 +368,59 @@
   background: var(--accent);
   color: var(--on-accent);
 }
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-2);
+}
+
+.tile {
+  display: grid;
+  gap: 4px;
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+}
+
+.tileNumber {
+  margin: 0;
+  font: var(--body-figure);
+  color: var(--accent-text);
+}
+
+.funnelRow {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid var(--line);
+}
+
+.bar {
+  display: block;
+  height: 12px;
+  background: var(--highlight);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--body-md);
+}
+
+.table th,
+.table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+@media (max-width: 520px) {
+  .funnelRow {
+    grid-template-columns: 1fr auto;
+  }
+  .funnelRow .bar {
+    display: none;
+  }
+}

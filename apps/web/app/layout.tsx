@@ -4,6 +4,7 @@ import { fontVariables } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "Frankie Suits",
   description: "Ladies' London and Turkey suits. Wholesale and retail from Martins Street, Lagos Island. Since 2012.",
 };

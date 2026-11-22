@@ -44,6 +44,9 @@ export function fakeTelegram(script: ("ok" | "fail")[] = ["ok"]) {
     async sendMessage(chatId, text) {
       messages.push({ chatId, text });
     },
+    async memberCount() {
+      return 42;
+    },
   };
   return { telegram, sent, messages };
 }

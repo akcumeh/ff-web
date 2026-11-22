@@ -30,5 +30,11 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Build api
+        run: npm run build -w @ff/api
+
       - name: Build web
         run: npm run build -w @ff/web
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high

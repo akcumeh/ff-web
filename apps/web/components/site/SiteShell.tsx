@@ -1,16 +1,22 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { getConfig } from "@/lib/catalogue";
 import { NavLinks } from "./NavLinks";
+import { PrivacySettingsButton, SiteAnalytics } from "./SiteAnalytics";
 import styles from "./site.module.css";
 
-export function SiteShell({ theme, children }: { theme: "light" | "dark"; children: ReactNode }) {
+export async function SiteShell({ theme, children }: { theme: "light" | "dark"; children: ReactNode }) {
+  const config = await getConfig();
+  const telegram = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL;
+  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_CHANNEL_URL;
+
   return (
     <div data-theme={theme} className={styles.themeRoot}>
       <header className={styles.header}>
         <div className={`${styles.container} ${styles.headerInner}`}>
           <Link href="/" className={styles.wordmark}>Frankie Suits</Link>
           <nav aria-label="Main" className={styles.nav}>
-            <NavLinks />
+            <NavLinks showTryon={config.tryon_enabled} />
           </nav>
         </div>
       </header>
@@ -32,7 +38,17 @@ export function SiteShell({ theme, children }: { theme: "light" | "dark"; childr
             </p>
           </div>
           <div>
-            <p className={styles.footerLabel}>Email</p>
+            <p className={styles.footerLabel}>Follow new designs</p>
+            {whatsapp && (
+              <p className={styles.footerText}>
+                <a href={whatsapp} target="_blank" rel="noopener" data-track-join="">WhatsApp channel</a>
+              </p>
+            )}
+            {telegram && (
+              <p className={styles.footerText}>
+                <a href={telegram} target="_blank" rel="noopener" data-track-join="">Telegram channel</a>
+              </p>
+            )}
             <p className={styles.footerText}><a href="mailto:frankiefabrics@yahoo.com">frankiefabrics@yahoo.com</a></p>
           </div>
           <div>
@@ -40,10 +56,12 @@ export function SiteShell({ theme, children }: { theme: "light" | "dark"; childr
             <p className={styles.footerText}><Link href="/wholesale">Wholesale</Link></p>
             <p className={styles.footerText}><Link href="/delivery-and-refunds">Delivery and refunds</Link></p>
             <p className={styles.footerText}><Link href="/privacy">Privacy</Link></p>
+            <p className={styles.footerText}><PrivacySettingsButton className={styles.footerButton} /></p>
           </div>
         </div>
         <div className={`${styles.container} ${styles.footerBottom}`}>Frankie Suits Ent. Since 2012.</div>
       </footer>
+      <SiteAnalytics />
     </div>
   );
 }

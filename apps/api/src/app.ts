@@ -24,6 +24,9 @@ export type AppDeps = {
   channels: Channels;
   suitLookup: Pick<AdminCatalogueRepo, "getSuit">;
   background?: (p: Promise<unknown>) => void;
+  rawBodyRouters?: Router[];
+  publicRouters?: Router[];
+  adminRouters?: Router[];
 };
 
 export function createApp(deps: AppDeps) {
@@ -47,6 +50,9 @@ export function createApp(deps: AppDeps) {
       credentials: false,
     }),
   );
+
+  for (const r of deps.rawBodyRouters ?? []) app.use(r);
+
   app.use(express.json({ limit: "100kb" }));
 
   app.get("/health", (_req, res) => {
@@ -55,6 +61,7 @@ export function createApp(deps: AppDeps) {
   });
 
   app.use("/suits", catalogueRouter(deps.catalogue));
+  for (const r of deps.publicRouters ?? []) app.use(r);
 
   const admin = Router();
   admin.use(requireAdmin(deps.auth));
@@ -68,6 +75,7 @@ export function createApp(deps: AppDeps) {
   admin.use(adminCatalogueRouter(deps.adminCatalogue));
   admin.use(adminAiRouter(deps.generation, deps.background));
   admin.use(adminChannelsRouter(deps.channels, deps.suitLookup));
+  for (const r of deps.adminRouters ?? []) admin.use(r);
   app.use("/admin", admin);
 
   app.use(notFound);

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatNaira, styleLabel, type SuitDetail } from "@ff/shared";
-import { getSuit } from "@/lib/catalogue";
-import { contactLink } from "@/lib/contact";
-import { siteUrl } from "@/lib/public-env";
+import { formatNaira, styleLabel } from "@ff/shared";
+import { getConfig, getSuit } from "@/lib/catalogue";
+import { HEAD_OFFICE_TEL, siteUrl, whatsappNumber } from "@/lib/public-env";
+import { buildMetadata } from "@/lib/metadata";
+import { productJsonLd, JsonLd } from "@/lib/jsonld";
+import { SuitBuy } from "@/components/site/SuitBuy";
 import { SuitCardLink } from "@/components/site/SuitCardLink";
 import { SuitImage } from "@/components/site/SuitImage";
 import site from "@/components/site/site.module.css";
@@ -17,27 +19,19 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const result = await getSuit(slug);
-  if (result.kind !== "ok") return { title: "Design | Frankie Suits" };
+  if (result.kind !== "ok") return buildMetadata({ title: "Design", description: "Ladies' suits from Frankie Suits, Lagos Island.", path: `/suits/${slug}`, noindex: true });
   const s = result.suit;
-  return {
-    title: `${styleLabel[s.style]}, Ref ${s.ref} | Frankie Suits`,
-    description: `${styleLabel[s.style]} ladies' suit, Ref ${s.ref}, ${formatNaira(s.price_kobo)}. From Martins Street, Lagos Island.`,
-  };
-}
-
-function sizesByColour(suit: SuitDetail) {
-  const map = new Map<string, { hex: string | null; sizes: { size: string; inStock: boolean }[] }>();
-  for (const v of suit.variants) {
-    const entry = map.get(v.colour) ?? { hex: v.hex, sizes: [] };
-    entry.sizes.push({ size: v.size, inStock: v.in_stock });
-    map.set(v.colour, entry);
-  }
-  return [...map.entries()];
+  return buildMetadata({
+    title: `${styleLabel[s.style]}, Ref ${s.ref}`,
+    description: `${styleLabel[s.style]} ladies' suit, Ref ${s.ref}, ${formatNaira(s.price_kobo)}. ${s.colours.map((c) => c.name).join(", ")}. From Martins Street, Lagos Island.`,
+    path: `/suits/${s.slug}`,
+    image: s.cover?.srcset.at(-1)?.url,
+  });
 }
 
 export default async function SuitPage({ params }: Params) {
   const { slug } = await params;
-  const result = await getSuit(slug);
+  const [result, config] = await Promise.all([getSuit(slug), getConfig()]);
   if (result.kind === "not_found") notFound();
   if (result.kind === "offline") {
     return (
@@ -50,13 +44,11 @@ export default async function SuitPage({ params }: Params) {
 
   const suit = result.suit;
   const name = styleLabel[suit.style];
-  const enquiry = contactLink(
-    `Hello Frankie Suits, I would like to ask about Ref ${suit.ref} (${name}). ${siteUrl()}/suits/${suit.slug}`,
-    "Ask us about this design",
-  );
+  const enquiry = `Hello Frankie Suits. I'd like to ask about ${name} Ref ${suit.ref}. ${siteUrl()}/suits/${suit.slug}`;
 
   return (
-    <div className={site.container}>
+    <div className={site.container} data-track-page={suit.slug}>
+      <JsonLd data={productJsonLd(suit, siteUrl())} />
       <section className={page.layout} aria-labelledby="suit-title">
         <div className={page.media}>
           <figure className={page.figure}>
@@ -70,7 +62,7 @@ export default async function SuitPage({ params }: Params) {
           {suit.real_photo && (
             <figure className={page.figure}>
               <SuitImage img={suit.real_photo} sizes="(max-width: 860px) 45vw, 260px" className={page.photo} />
-              <figcaption className={page.caption}>Real photo of this suit</figcaption>
+              <figcaption className={page.caption}>The cloth as photographed</figcaption>
             </figure>
           )}
         </div>
@@ -78,49 +70,39 @@ export default async function SuitPage({ params }: Params) {
         <div className={page.info}>
           <h1 id="suit-title" className={styles.h1}>{suit.title === name ? name : suit.title}</h1>
           <p className={styles.sub}>Ref {suit.ref}</p>
-          <p className={cards.price}>{formatNaira(suit.price_kobo)}</p>
-
-          {(suit.is_past || suit.sold_out) && (
+          {(suit.is_latest || suit.is_past || suit.sold_out) && (
             <p className={cards.tags}>
+              {suit.is_latest && <span className={cards.tag}>Latest</span>}
               {suit.is_past && <span className={cards.tag}>Past design</span>}
               {suit.sold_out && <span className={cards.tag}>Sold out</span>}
             </p>
           )}
-
           {suit.description && <p className={styles.body}>{suit.description}</p>}
+          <p className={cards.price}>{formatNaira(suit.price_kobo)}</p>
 
-          <h2 className={page.label}>Colours and sizes</h2>
-          <ul className={page.colours}>
-            {sizesByColour(suit).map(([colour, { hex, sizes }]) => (
-              <li key={colour} className={page.colourRow}>
-                <span className={page.swatch} style={hex ? { background: hex } : undefined} aria-hidden="true" />
-                <span className={page.colourName}>{colour}</span>
-                <span className={page.sizes}>
-                  {sizes.map((s) => (
-                    <span key={s.size} className={s.inStock ? page.size : page.sizeOut}>
-                      {s.size}
-                      {!s.inStock && <span className={page.visuallyHidden}> (sold out)</span>}
-                    </span>
-                  ))}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <SuitBuy
+            slug={suit.slug}
+            variants={suit.variants}
+            soldOut={suit.sold_out}
+            waNumber={whatsappNumber()}
+            enquiryMessage={enquiry}
+            telFallback={HEAD_OFFICE_TEL}
+          />
 
-          <div className={styles.actions}>
-            <a href={enquiry.href} className={styles.primary} {...(enquiry.external ? { target: "_blank", rel: "noopener" } : {})}>
-              {enquiry.label}
-            </a>
-          </div>
+          {config.tryon_enabled && (
+            <p className={styles.small}>
+              <Link href={`/changing-room?suit=${suit.slug}`} className={styles.textLink}>Try it on in the changing room</Link>
+            </p>
+          )}
           <p className={styles.small}>
-            {enquiry.external ? "We reply on WhatsApp. " : ""}Delivery is arranged after you order.
+            <Link href="/delivery-and-refunds" className={styles.textLink}>Delivery and refunds</Link>
           </p>
         </div>
       </section>
 
       {suit.related.length > 0 && (
         <section className={styles.section} aria-labelledby="related-title">
-          <h2 id="related-title" className={styles.h2}>More {name} designs</h2>
+          <h2 id="related-title" className={styles.h2}>More from this style</h2>
           <ul className={cards.grid}>
             {suit.related.map((s) => (
               <li key={s.id}><SuitCardLink suit={s} /></li>

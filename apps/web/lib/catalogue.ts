@@ -42,3 +42,14 @@ export async function getSuit(slug: string): Promise<SuitResult> {
     return { kind: "offline" };
   }
 }
+
+export async function getConfig(): Promise<{ tryon_enabled: boolean }> {
+  try {
+    const res = await fetch(`${apiInternalUrl()}/config`, { next: { revalidate: 60, tags: ["config"] }, signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return { tryon_enabled: false };
+    const body = (await res.json()) as { tryon_enabled?: unknown };
+    return { tryon_enabled: body.tryon_enabled === true };
+  } catch {
+    return { tryon_enabled: false };
+  }
+}

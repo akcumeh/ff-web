@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/metadata";
 import site from "@/components/site/site.module.css";
 import styles from "@/components/site/pages.module.css";
 
-export const metadata: Metadata = {
-  title: "Delivery and refunds | Frankie Suits",
-  description: "How Frankie Suits delivers orders and handles returns and refunds.",
-};
+export const metadata: Metadata = buildMetadata({ title: "Delivery and refunds", description: "How Frankie Suits delivers orders and handles returns and refunds.", path: "/delivery-and-refunds" });
 
 export default function DeliveryPage() {
   return (

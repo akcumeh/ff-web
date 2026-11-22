@@ -19,7 +19,9 @@ export async function AdminNav() {
             To post{count > 0 && <span className={styles.navCount} aria-label={`${count} waiting`}>{count}</span>}
           </Link>
         </li>
-        <li><Link href="/admin/ai">AI instructions</Link></li>
+        <li><Link href="/admin/orders">Orders</Link></li>
+        <li><Link href="/admin/stats">Stats</Link></li>
+        <li><Link href="/admin/ai">AI and changing room</Link></li>
         <li><Link href="/admin/settings">Settings</Link></li>
         <li><Link href="/" target="_blank">View site</Link></li>
       </ul>

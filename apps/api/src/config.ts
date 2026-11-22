@@ -8,6 +8,10 @@ const Env = z.object({
   TG_BOT_TOKEN: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(3).optional()),
   TG_CHANNEL_ID: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(3).optional()),
   TG_ALERT_CHAT_ID: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(3).optional()),
+  VISITOR_HASH_SECRET: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(24).optional()),
+  IP_HASH_SECRET: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(24).optional()),
+  CRON_SECRET: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(16).optional()),
+  PAYSTACK_SECRET_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^sk_(test|live)_/, "must start with sk_test_ or sk_live_").optional()),
   REVALIDATE_SECRET: z.string().min(24, "use 24 or more random characters").optional(),
   SUPABASE_SEC_KEY: z.string().startsWith("sb_secret_", "must be the new sb_secret_ key, not a legacy key"),
 });
@@ -21,6 +25,10 @@ export type Config = {
   revalidateSecret: string | undefined;
   googleApiKey: string | undefined;
   telegram: { token: string | undefined; channelId: string | undefined; alertChatId: string | undefined };
+  visitorSecret: string | undefined;
+  ipSecret: string | undefined;
+  cronSecret: string | undefined;
+  paystackSecret: string | undefined;
 };
 
 function wwwTwin(origin: string): string {
@@ -47,5 +55,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     revalidateSecret: e.REVALIDATE_SECRET,
     googleApiKey: e.GOOGLE_API_KEY,
     telegram: { token: e.TG_BOT_TOKEN, channelId: e.TG_CHANNEL_ID, alertChatId: e.TG_ALERT_CHAT_ID },
+    visitorSecret: e.VISITOR_HASH_SECRET,
+    ipSecret: e.IP_HASH_SECRET,
+    cronSecret: e.CRON_SECRET,
+    paystackSecret: e.PAYSTACK_SECRET_KEY,
   };
 }

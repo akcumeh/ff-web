@@ -9,9 +9,10 @@ export class TelegramFailure extends Error {
 export interface TelegramPort {
   sendPhoto(chatId: string, photo: Buffer, caption: string): Promise<{ messageId: string }>;
   sendMessage(chatId: string, text: string): Promise<void>;
+  memberCount(chatId: string): Promise<number>;
 }
 
-type TgReply = { ok: boolean; result?: { message_id: number }; error_code?: number; description?: string; parameters?: { retry_after?: number } };
+type TgReply = { ok: boolean; result?: { message_id: number } | number; error_code?: number; description?: string; parameters?: { retry_after?: number } };
 
 export function createTelegram(opts: {
   token: string;
@@ -60,10 +61,15 @@ export function createTelegram(opts: {
         },
         false,
       );
-      return { messageId: String(reply.result?.message_id ?? "") };
+      const result = reply.result as { message_id?: number } | undefined;
+      return { messageId: String(result?.message_id ?? "") };
     },
     async sendMessage(chatId, text) {
       await call("sendMessage", () => JSON.stringify({ chat_id: chatId, text }), true);
+    },
+    async memberCount(chatId) {
+      const reply = await call("getChatMemberCount", () => JSON.stringify({ chat_id: chatId }), true);
+      return Number(reply.result ?? 0);
     },
   };
 }

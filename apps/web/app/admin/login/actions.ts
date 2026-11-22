@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginRequest, TotpCode } from "@ff/shared";
 import { createSupabaseServer } from "@/lib/supabase-server";
@@ -32,6 +33,7 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
     return { message, email };
   }
 
+  (await cookies()).set("ff_internal", "1", { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", secure: process.env.NODE_ENV === "production", httpOnly: false });
   const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   redirect(data?.nextLevel === "aal2" && data.currentLevel !== "aal2" ? "/admin/login/code" : "/admin");
 }

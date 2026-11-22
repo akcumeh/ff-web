@@ -6,7 +6,7 @@ import styles from "./suits.module.css";
 export function SuitCardLink({ suit, priority = false }: { suit: SuitCard; priority?: boolean }) {
   const colours = suit.colours.map((c) => c.name).join(", ");
   return (
-    <Link href={`/suits/${suit.slug}`} className={styles.card}>
+    <Link href={`/suits/${suit.slug}`} className={styles.card} data-track-view={suit.slug}>
       {suit.cover ? (
         <SuitImage img={suit.cover} sizes="(max-width: 640px) 80vw, 300px" priority={priority} className={styles.photo} />
       ) : (

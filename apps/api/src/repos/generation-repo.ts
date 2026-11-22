@@ -55,6 +55,17 @@ export function supabaseGenerationRepo(db: SupabaseClient): GenerationRepo {
       check(error, "run count");
       return count ?? 0;
     },
+    async countTryonSince(requesterHash, sinceIso) {
+      const { count, error } = await db
+        .from("ai_generations")
+        .select("id", { count: "exact", head: true })
+        .eq("kind", "tryon")
+        .eq("requester_hash", requesterHash)
+        .neq("status", "blocked_budget")
+        .gte("created_at", sinceIso);
+      check(error, "tryon count");
+      return count ?? 0;
+    },
     async hasActiveJob(suitId) {
       const { count, error } = await db.from("ai_generations").select("id", { count: "exact", head: true }).eq("suit_id", suitId).in("status", ["queued", "running"]);
       check(error, "active job");

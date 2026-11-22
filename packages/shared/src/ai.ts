@@ -50,6 +50,9 @@ export const AiSettings = z.object({
   ai_kill_switch: z.boolean(),
   ai_monthly_cap_usd_micro: z.number(),
   month_spend_usd_micro: z.number(),
+  tryon_enabled: z.boolean(),
+  tryon_monthly_cap_usd_micro: z.number(),
+  tryon_month_spend_usd_micro: z.number(),
 });
 export type AiSettings = z.infer<typeof AiSettings>;
 
@@ -57,4 +60,6 @@ export const AiSettingsUpdate = z.strictObject({
   style_notes: z.strictObject({ london: z.string().trim().min(1).max(300), turkey: z.string().trim().min(1).max(300) }).optional(),
   ai_kill_switch: z.boolean().optional(),
   ai_monthly_cap_usd_micro: z.number().int().min(0).max(100_000_000).optional(),
+  tryon_enabled: z.boolean().optional(),
+  tryon_monthly_cap_usd_micro: z.number().int().min(0).max(100_000_000).optional(),
 });

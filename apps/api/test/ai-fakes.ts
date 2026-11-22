@@ -32,6 +32,7 @@ export function memoryGenRepo(overrides: Record<string, unknown> = {}) {
   const templates = [
     { id: "t1", name: "observe", version: 1, body: "Describe the suit.", is_active: true },
     { id: "t2", name: "direct", version: 1, body: "Draw a model wearing it. {{style_note}} {{observation}} {{extra}}", is_active: true },
+    { id: "t3", name: "tryon", version: 1, body: "Show this person wearing this suit.", is_active: true },
   ];
   const rows = new Map<string, GenRow & Record<string, unknown>>();
   let claims = 0;
@@ -60,6 +61,9 @@ export function memoryGenRepo(overrides: Record<string, unknown> = {}) {
     },
     async countForSuitSince(suitId, since) {
       return [...rows.values()].filter((r) => r.suit_id === suitId && r.created_at >= since && r.status !== "blocked_budget").length;
+    },
+    async countTryonSince(hash, since) {
+      return [...rows.values()].filter((r) => r.kind === "tryon" && (r as Record<string, unknown>).requester_hash === hash && r.created_at >= since && r.status !== "blocked_budget").length;
     },
     async hasActiveJob(suitId) {
       return [...rows.values()].some((r) => r.suit_id === suitId && (r.status === "queued" || r.status === "running"));

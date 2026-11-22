@@ -10,11 +10,12 @@ const LINKS = [
   { href: "/about", label: "About" },
 ];
 
-export function NavLinks() {
+export function NavLinks({ showTryon }: { showTryon: boolean }) {
   const path = usePathname();
+  const links = showTryon ? [...LINKS.slice(0, 2), { href: "/changing-room", label: "Changing room" }, ...LINKS.slice(2)] : LINKS;
   return (
     <ul>
-      {LINKS.map((l) => {
+      {links.map((l) => {
         const current = l.href === "/" ? path === "/" : path.startsWith(l.href);
         return (
           <li key={l.href}>

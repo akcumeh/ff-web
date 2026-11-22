@@ -52,6 +52,21 @@ export function AiSettingsForm({ settings, prompts }: { settings: AiSettings; pr
     void save("budget", () => adminCall("PATCH", "/settings", { ai_monthly_cap_usd_micro: Math.round(dollars * 1e6) }));
   };
 
+  const [roomCap, setRoomCap] = useState(String(settings.tryon_monthly_cap_usd_micro / 1e6));
+  const saveRoomCap = (e: FormEvent) => {
+    e.preventDefault();
+    const dollars = Number(roomCap);
+    if (!Number.isFinite(dollars) || dollars < 0) {
+      setMessage("Enter the cap in dollars, for example 2.");
+      return;
+    }
+    void save("changing room cap", () => adminCall("PATCH", "/settings", { tryon_monthly_cap_usd_micro: Math.round(dollars * 1e6) }));
+  };
+  const toggleRoom = () => {
+    if (!window.confirm(settings.tryon_enabled ? "Close the changing room?" : "Open the changing room to customers?")) return;
+    void save("the changing room", () => adminCall("PATCH", "/settings", { tryon_enabled: !settings.tryon_enabled }));
+  };
+
   const toggleKill = () =>
     save("the switch", () => adminCall("PATCH", "/settings", { ai_kill_switch: !settings.ai_kill_switch }));
 
@@ -82,6 +97,26 @@ export function AiSettingsForm({ settings, prompts }: { settings: AiSettings; pr
         </div>
       </section>
 
+      <section className={styles.fieldset} aria-labelledby="room-title">
+        <h2 id="room-title" className={styles.legend}>Changing room</h2>
+        <p className={styles.lead}>
+          {settings.tryon_enabled ? "Open." : "Closed."} ${(settings.tryon_month_spend_usd_micro / 1e6).toFixed(2)} of ${(settings.tryon_monthly_cap_usd_micro / 1e6).toFixed(2)} used this month.
+        </p>
+        <p className={styles.hint}>Customers send a photo of themselves. Use a paid Gemini key and get the privacy page checked before you open it to the public.</p>
+        <form onSubmit={saveRoomCap} className={styles.inline} noValidate>
+          <div className={styles.field}>
+            <label htmlFor="room-cap" className={styles.label}>Changing room monthly cap in US dollars</label>
+            <input id="room-cap" inputMode="decimal" className={styles.input} value={roomCap} onChange={(e) => setRoomCap(e.target.value)} />
+          </div>
+          <button type="submit" className={styles.secondary} disabled={busy}>Save cap</button>
+        </form>
+        <div className={styles.actions}>
+          <button type="button" className={settings.tryon_enabled ? styles.secondary : styles.primary} onClick={toggleRoom} disabled={busy}>
+            {settings.tryon_enabled ? "Close the changing room" : "Open the changing room"}
+          </button>
+        </div>
+      </section>
+
       <form onSubmit={saveNotes} className={styles.fieldset} noValidate>
         <h2 className={styles.legend}>Style notes</h2>
         <p className={styles.hint}>One sentence each. It goes into every drawing of that style.</p>
@@ -99,7 +134,6 @@ export function AiSettingsForm({ settings, prompts }: { settings: AiSettings; pr
       </form>
 
       {prompts
-        .filter((p) => p.name !== "tryon")
         .map((p) => (
           <form key={p.name} onSubmit={savePrompt(p.name)} className={styles.fieldset} noValidate>
             <h2 className={styles.legend}>{LABELS[p.name]?.title ?? p.name}</h2>

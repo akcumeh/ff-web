@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/metadata";
 import site from "@/components/site/site.module.css";
 import styles from "@/components/site/pages.module.css";
 
-export const metadata: Metadata = {
-  title: "Privacy | Frankie Suits",
-  description: "What Frankie Suits collects on this site, why, and how long it is kept.",
-};
+export const metadata: Metadata = buildMetadata({ title: "Privacy", description: "What Frankie Suits collects on this site, why, and how long it is kept.", path: "/privacy" });
 
 export default function PrivacyPage() {
   return (

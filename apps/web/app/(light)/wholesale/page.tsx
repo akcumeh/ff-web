@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { contactLink } from "@/lib/contact";
+import { buildMetadata } from "@/lib/metadata";
 import site from "@/components/site/site.module.css";
 import styles from "@/components/site/pages.module.css";
 
-export const metadata: Metadata = {
-  title: "Ladies' suits wholesale, Lagos Island | Frankie Suits",
+export const metadata: Metadata = buildMetadata({
+  title: "Ladies' suits wholesale, Lagos Island",
   description: "Order ladies' London and Turkey suits in bulk for churches, offices, events and uniforms. Martins Street, Lagos Island.",
-};
+  path: "/wholesale",
+});
 
 export default function WholesalePage() {
   const bulk = contactLink(

@@ -73,6 +73,9 @@ export function fakeCatalogueRepo(rows: SuitRow[] = SUITS): CatalogueRepo {
 }
 
 export type FakeOptions = {
+  rawBodyRouters?: import("express").Router[];
+  publicRouters?: import("express").Router[];
+  adminRouters?: import("express").Router[];
   tokens?: Record<string, TokenClaims>;
   totpUsers?: string[];
   now?: Date;
@@ -116,5 +119,8 @@ export function testApp(opts: FakeOptions = {}) {
       opts.channels ??
       createChannels({ repo: memoryChannelRepo().repo, storage: memoryStorage().storage, telegram: null, channelId: undefined, alertChatId: undefined, siteUrl: SITE, audit: recorder().audit }),
     suitLookup: opts.suitLookup ?? memoryRepo().repo,
+    rawBodyRouters: opts.rawBodyRouters,
+    publicRouters: opts.publicRouters,
+    adminRouters: opts.adminRouters,
   });
 }

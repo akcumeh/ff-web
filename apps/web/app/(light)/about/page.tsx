@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { contactLink } from "@/lib/contact";
+import { buildMetadata } from "@/lib/metadata";
+import { JsonLd, storeJsonLd } from "@/lib/jsonld";
+import { siteUrl } from "@/lib/public-env";
 import site from "@/components/site/site.module.css";
 import styles from "@/components/site/pages.module.css";
 
-export const metadata: Metadata = {
-  title: "About | Frankie Suits",
+export const metadata: Metadata = buildMetadata({
+  title: "About",
   description: "Frankie Suits has sold ladies' London and Turkey suits on Martins Street, Lagos Island, since 2012.",
-};
+  path: "/about",
+});
 
 const STEPS = [
   { title: "Walk in", text: "Visit either office on Martins Street and try a fit." },
@@ -20,6 +24,7 @@ export default function AboutPage() {
   const message = contactLink("Hello Frankie Suits, I have a question.", "Message us on WhatsApp");
   return (
     <div className={site.container}>
+      <JsonLd data={storeJsonLd(siteUrl())} />
       <section className={styles.section} aria-labelledby="about-title">
         <h1 id="about-title" className={styles.h1}>About Frankie Suits</h1>
         <p className={styles.lead}>

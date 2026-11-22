@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SuitStyle } from "@ff/shared";
 import { getSuits } from "@/lib/catalogue";
+import { buildMetadata } from "@/lib/metadata";
 import { Carousel } from "@/components/site/Carousel";
 import { SuitCardLink } from "@/components/site/SuitCardLink";
 import site from "@/components/site/site.module.css";
@@ -9,10 +10,11 @@ import styles from "@/components/site/pages.module.css";
 import cards from "@/components/site/suits.module.css";
 import gallery from "./gallery.module.css";
 
-export const metadata: Metadata = {
-  title: "Gallery | Frankie Suits",
+export const metadata: Metadata = buildMetadata({
+  title: "Gallery",
   description: "Ladies' London style and Turkey style suits in store now, and past designs.",
-};
+  path: "/gallery",
+});
 
 type Search = { style?: string; months?: string; view?: string; cursor?: string };
 

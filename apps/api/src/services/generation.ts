@@ -29,7 +29,8 @@ export interface GenerationRepo {
   monthSpend(kind: "catalogue" | "tryon", sinceIso: string): Promise<number>;
   countForSuitSince(suitId: string, sinceIso: string): Promise<number>;
   hasActiveJob(suitId: string): Promise<boolean>;
-  insert(row: Partial<GenRow> & { kind: "catalogue"; suit_id: string; status: GenStatus; candidate_count: number; created_by: string; redo_of?: string | null }): Promise<{ id: string }>;
+  insert(row: Partial<GenRow> & { kind: "catalogue" | "tryon"; suit_id: string | null; status: GenStatus; candidate_count: number; created_by?: string; redo_of?: string | null; requester_hash?: string; started_at?: string }): Promise<{ id: string }>;
+  countTryonSince(requesterHash: string, sinceIso: string): Promise<number>;
   claim(id: string): Promise<GenRow | null>;
   get(id: string): Promise<GenRow | null>;
   update(id: string, patch: Record<string, unknown>): Promise<void>;
@@ -270,6 +271,9 @@ export function createGeneration(deps: GenerationDeps) {
       ai_kill_switch: (await deps.gen.setting<boolean>("ai_kill_switch")) ?? false,
       ai_monthly_cap_usd_micro: (await deps.gen.setting<number>("ai_monthly_cap_usd_micro")) ?? 9_000_000,
       month_spend_usd_micro: await deps.gen.monthSpend("catalogue", lagosMonthStart(now())),
+      tryon_enabled: (await deps.gen.setting<boolean>("tryon_enabled")) ?? false,
+      tryon_monthly_cap_usd_micro: (await deps.gen.setting<number>("tryon_monthly_cap_usd_micro")) ?? 2_000_000,
+      tryon_month_spend_usd_micro: await deps.gen.monthSpend("tryon", lagosMonthStart(now())),
     };
   }
 
@@ -286,7 +290,7 @@ export function createGeneration(deps: GenerationDeps) {
 
     settings,
 
-    async updateSettings(adminId: string, patch: Partial<Pick<AiSettings, "style_notes" | "ai_kill_switch" | "ai_monthly_cap_usd_micro">>) {
+    async updateSettings(adminId: string, patch: Partial<Pick<AiSettings, "style_notes" | "ai_kill_switch" | "ai_monthly_cap_usd_micro" | "tryon_enabled" | "tryon_monthly_cap_usd_micro">>) {
       for (const [key, value] of Object.entries(patch)) {
         if (value === undefined) continue;
         await deps.gen.setSetting(key, value, adminId);

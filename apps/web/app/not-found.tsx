@@ -3,7 +3,7 @@ import { SiteShell } from "@/components/site/SiteShell";
 import site from "@/components/site/site.module.css";
 import styles from "@/components/site/pages.module.css";
 
-export default function NotFound() {
+export default async function NotFound() {
   return (
     <SiteShell theme="light">
       <div className={`${site.container} ${styles.section}`}>
