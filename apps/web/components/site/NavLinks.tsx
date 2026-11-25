@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Home" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/wholesale", label: "Wholesale" },
-  { href: "/about", label: "About" },
+  { href: "/gallery", label: "Our suits" },
+  { href: "/wholesale", label: "Buy in bulk" },
+  { href: "/about", label: "About us" },
 ];
 
 export function NavLinks({ showTryon }: { showTryon: boolean }) {
   const path = usePathname();
-  const links = showTryon ? [...LINKS.slice(0, 2), { href: "/changing-room", label: "Changing room" }, ...LINKS.slice(2)] : LINKS;
+  const links = showTryon ? [...LINKS.slice(0, 2), { href: "/changing-room", label: "Try a suit on" }, ...LINKS.slice(2)] : LINKS;
   return (
     <ul>
       {links.map((l) => {

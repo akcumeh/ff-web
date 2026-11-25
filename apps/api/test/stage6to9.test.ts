@@ -346,6 +346,8 @@ describe("changing room", () => {
       suitBySlug: async (slug) => (slug === "london-style-ln-01" ? { id: SUIT_ID, final_path: "s1/final", final_widths: [480, 1080] } : null),
       visitorSecret: VISITOR_SECRET,
       ipSecret: "i".repeat(32),
+      enabled: settings.tryon_enabled !== false,
+      monthlyCapUsdMicro: (settings.tryon_monthly_cap_usd_micro as number | undefined) ?? 2_000_000,
     });
     const app = testApp({ rawBodyRouters: [tryonRouter(tryon, async () => {})] });
     return { gen, ai, app };

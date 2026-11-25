@@ -5,15 +5,17 @@ import { GeminiFailure, type GeminiPort } from "../src/services/gemini.ts";
 
 export const GOOD_OBSERVATION = {
   is_garment: true,
-  garment: "skirt suit",
-  colour_seen: "emerald green",
-  fabric_look: "crepe",
-  neckline: "round",
-  sleeves: "long",
-  length: "knee",
-  trim: "none",
-  pattern: "plain",
-  notes_for_drawer: "two buttons",
+  color: "emerald green",
+  pattern: "solid",
+  texture: "crepe",
+  type: "skirt-suit",
+  skirt_length: "knee",
+  gown_length: null,
+  sleeve_length: "full",
+  has_camisole: false,
+  has_belt: null,
+  has_no_jacket: null,
+  notes: "two buttons",
   alt_text: "Emerald green skirt suit with a round neck and long sleeves",
   problems: ["blur"],
 };
@@ -21,40 +23,17 @@ export const GOOD_OBSERVATION = {
 export function memoryGenRepo(overrides: Record<string, unknown> = {}) {
   const settings = new Map<string, unknown>(
     Object.entries({
-      ai_kill_switch: false,
-      ai_monthly_cap_usd_micro: 9_000_000,
       gen_per_suit_per_day: 6,
       price_rates: { observe_input_per_mtok_usd_micro: 250_000, observe_output_per_mtok_usd_micro: 1_500_000, image_1k_usd_micro: 34_000 },
-      style_notes: { london: "Structured shoulders.", turkey: "Soft drape." },
       ...overrides,
     }),
   );
-  const templates = [
-    { id: "t1", name: "observe", version: 1, body: "Describe the suit.", is_active: true },
-    { id: "t2", name: "direct", version: 1, body: "Draw a model wearing it. {{style_note}} {{observation}} {{extra}}", is_active: true },
-    { id: "t3", name: "tryon", version: 1, body: "Show this person wearing this suit.", is_active: true },
-  ];
   const rows = new Map<string, GenRow & Record<string, unknown>>();
   let claims = 0;
 
   const repo: GenerationRepo = {
     async setting<T>(key: string) {
       return (settings.has(key) ? settings.get(key) : null) as T | null;
-    },
-    async setSetting(key, value) {
-      settings.set(key, value);
-    },
-    async activeTemplate(name) {
-      return templates.find((t) => t.name === name && t.is_active) ?? null;
-    },
-    async activeTemplates() {
-      return templates.filter((t) => t.is_active);
-    },
-    async saveTemplate(name, body) {
-      const version = Math.max(0, ...templates.filter((t) => t.name === name).map((t) => t.version)) + 1;
-      for (const t of templates) if (t.name === name) t.is_active = false;
-      templates.push({ id: randomUUID(), name, version, body, is_active: true });
-      return { version };
     },
     async monthSpend(kind, since) {
       return [...rows.values()].filter((r) => r.kind === kind && r.created_at >= since).reduce((s, r) => s + r.cost_usd_micro, 0);
@@ -93,7 +72,7 @@ export function memoryGenRepo(overrides: Record<string, unknown> = {}) {
       if (r && r.status === "running" && r.started_at && r.started_at < older) Object.assign(r, { status: "failed", error: "timeout" });
     },
   };
-  return { repo, rows, settings, templates, claims: () => claims };
+  return { repo, rows, settings, claims: () => claims };
 }
 
 export type DrawStep = "ok" | "safety" | "no_image" | "error";
@@ -104,12 +83,17 @@ export async function fakeImage() {
 
 export function scriptedGemini(opts: { observation?: unknown; draws?: DrawStep[]; observeFails?: GeminiFailure } = {}) {
   const draws = [...(opts.draws ?? ["ok", "ok"])];
-  const calls = { observe: 0, draw: 0, prompts: [] as string[] };
+  const calls = { observe: 0, write: 0, draw: 0, prompts: [] as string[], briefs: [] as string[] };
   const gemini: GeminiPort = {
     async observe() {
       calls.observe += 1;
       if (opts.observeFails) throw opts.observeFails;
       return { json: opts.observation ?? GOOD_OBSERVATION, inputTokens: 4000, outputTokens: 400 };
+    },
+    async write(prompt) {
+      calls.write += 1;
+      calls.briefs.push(prompt);
+      return { text: "Editorial photo of a plus-sized woman in the emerald suit.", inputTokens: 300, outputTokens: 200 };
     },
     async draw(prompt) {
       calls.draw += 1;

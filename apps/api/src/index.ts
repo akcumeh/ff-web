@@ -39,7 +39,7 @@ const alert = async (text: string) => {
 const noKey = async (): Promise<never> => {
   throw new GeminiFailure("failed", "no_api_key");
 };
-const gemini: GeminiPort = config.googleApiKey ? createGemini({ apiKey: config.googleApiKey }) : { observe: noKey, draw: noKey };
+const gemini: GeminiPort = config.googleApiKey ? createGemini({ apiKey: config.googleApiKey }) : { observe: noKey, write: noKey, draw: noKey };
 
 const channels = createChannels({
   repo: supabaseChannelRepo(supabase),
@@ -70,6 +70,8 @@ const tryon = createTryon({
   suitBySlug: supabaseTryonSuit(supabase),
   visitorSecret: config.visitorSecret,
   ipSecret: config.ipSecret,
+  enabled: config.ai.tryonEnabled && Boolean(config.googleApiKey),
+  monthlyCapUsdMicro: config.ai.tryonMonthlyCapUsdMicro,
 });
 
 const nightly = createNightly({ db: supabase, telegram, channelId: config.telegram.channelId, alertChatId: config.telegram.alertChatId });
@@ -87,7 +89,7 @@ const app = createApp({
   }),
   channels,
   suitLookup: catalogueRepo,
-  generation: createGeneration({ gen: genRepo, catalogue: catalogueRepo, storage, gemini, audit }),
+  generation: createGeneration({ gen: genRepo, catalogue: catalogueRepo, storage, gemini, audit, monthlyCapUsdMicro: config.ai.monthlyCapUsdMicro }),
   rawBodyRouters: [webhookRouter(orders, config.paystackSecret), tryonRouter(tryon, analytics.limit)],
   publicRouters: [publicAnalyticsRouter(analytics), publicOrdersRouter(orders, analytics.limit), cronRouter(nightly, config.cronSecret)],
   adminRouters: [adminAnalyticsRouter(analytics, supabaseAdminAnalytics(supabase), audit), adminOrdersRouter(orders)],

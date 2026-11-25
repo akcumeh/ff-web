@@ -113,7 +113,7 @@ export function testApp(opts: FakeOptions = {}) {
       createAdminCatalogue({ repo: memoryRepo().repo, storage: memoryStorage().storage, ...recorder() }),
     generation:
       opts.generation ??
-      createGeneration({ gen: memoryGenRepo().repo, catalogue: memoryRepo().repo, storage: memoryStorage().storage, gemini: scriptedGemini().gemini, audit: recorder().audit }),
+      createGeneration({ gen: memoryGenRepo().repo, catalogue: memoryRepo().repo, storage: memoryStorage().storage, gemini: scriptedGemini().gemini, audit: recorder().audit, monthlyCapUsdMicro: 9_000_000 }),
     background: opts.background ?? (() => {}),
     channels:
       opts.channels ??

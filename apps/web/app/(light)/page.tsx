@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { getSuits } from "@/lib/catalogue";
+import { getConfig, getSuits } from "@/lib/catalogue";
 import { buildMetadata } from "@/lib/metadata";
 import { JsonLd, storeJsonLd } from "@/lib/jsonld";
 import { siteUrl } from "@/lib/public-env";
-
-import { contactLink } from "@/lib/contact";
+import { ContactButtons } from "@/components/site/ContactButtons";
 import { SuitCardLink } from "@/components/site/SuitCardLink";
 import { SuitImage } from "@/components/site/SuitImage";
 import site from "@/components/site/site.module.css";
@@ -13,21 +12,20 @@ import cards from "@/components/site/suits.module.css";
 
 export const metadata = buildMetadata({
   title: "Frankie Suits",
-  description: "Ladies' London and Turkey suits. Wholesale and retail from Martins Street, Lagos Island. Since 2012.",
+  description: "Ladies' London and Turkey suits for church, work and events. Martins Street, Lagos Island. Since 2012.",
   path: "",
 });
 
-const COLLECTIONS = [
+const OCCASIONS = [
   { name: "Church", line: "Skirt suits and long jackets for Sunday service." },
-  { name: "Office", line: "Tailored sets for the working week." },
-  { name: "Events", line: "Matching outfits for weddings and conferences." },
-  { name: "Uniforms", line: "Bulk orders in one colour for your whole team." },
+  { name: "Work", line: "Neat suits for the office, all week." },
+  { name: "Events", line: "Matching suits for weddings and special days." },
+  { name: "Uniforms", line: "Many suits in one colour for your whole group." },
 ];
 
 export default async function HomePage() {
-  const latest = await getSuits({ latest: true, limit: 4 });
+  const [latest, config] = await Promise.all([getSuits({ latest: true, limit: 4 }), getConfig()]);
   const heroSuit = latest?.items.find((s) => s.cover);
-  const message = contactLink("Hello Frankie Suits, I would like to ask about your suits.", "Message us on WhatsApp");
 
   return (
     <>
@@ -35,41 +33,27 @@ export default async function HomePage() {
       <section className={`${site.container} ${styles.hero}`} aria-labelledby="home-title">
         <div className={styles.heroText}>
           <h1 id="home-title" className={styles.display}>Ladies&rsquo; London and Turkey suits</h1>
-          <p className={styles.lead}>Wholesale and retail from Martins Street, Lagos Island. Since 2012.</p>
+          <p className={styles.lead}>
+            {config.tryon_enabled
+              ? "See our latest suits, then try any of them on your own photo before you buy."
+              : "See our latest suits and ask us about any of them on WhatsApp."}
+          </p>
           <div className={styles.actions}>
-            <Link href="/gallery" className={styles.primary}>See the gallery</Link>
-            <a href={message.href} className={styles.secondary} {...(message.external ? { target: "_blank", rel: "noopener" } : {})}>
-              {message.label}
-            </a>
+            <Link href="/gallery" className={styles.primary}>See our suits</Link>
+            {config.tryon_enabled && <Link href="/changing-room" className={styles.secondary}>Try a suit on</Link>}
           </div>
         </div>
-        <div className={styles.field}>
-          {heroSuit?.cover && <SuitImage img={heroSuit.cover} sizes="(max-width: 860px) 90vw, 480px" priority className={styles.fieldPhoto} />}
-        </div>
-      </section>
-
-      <section className={`${site.container} ${styles.section}`} aria-labelledby="collections-title">
-        <h2 id="collections-title" className={styles.h2}>For every occasion</h2>
-        <ul className={styles.collections}>
-          {COLLECTIONS.map((c) => {
-            const link = contactLink(`Hello Frankie Suits, I am looking for suits for ${c.name.toLowerCase()}.`, `Ask about ${c.name.toLowerCase()} suits`);
-            return (
-              <li key={c.name}>
-                <h3 className={styles.collectionTitle}>{c.name}</h3>
-                <p className={styles.small}>{c.line}</p>
-                <a href={link.href} className={styles.textLink} {...(link.external ? { target: "_blank", rel: "noopener" } : {})}>
-                  {link.label}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        {heroSuit?.cover && (
+          <div className={styles.field}>
+            <SuitImage img={heroSuit.cover} sizes="(max-width: 860px) 90vw, 480px" priority className={styles.fieldPhoto} />
+          </div>
+        )}
       </section>
 
       <section className={`${site.container} ${styles.section}`} aria-labelledby="new-title">
-        <h2 id="new-title" className={styles.h2}>New in store</h2>
-        {latest === null && <p className={styles.notice}>The designs could not be loaded just now. Reload the page in a moment.</p>}
-        {latest && latest.items.length === 0 && <p className={styles.notice}>New designs are on their way. Check back soon.</p>}
+        <h2 id="new-title" className={styles.h2}>New suits</h2>
+        {latest === null && <p className={styles.notice}>The suits could not load just now. Please refresh the page.</p>}
+        {latest && latest.items.length === 0 && <p className={styles.notice}>New suits are coming soon.</p>}
         {latest && latest.items.length > 0 && (
           <ul className={cards.grid}>
             {latest.items.map((s) => (
@@ -77,14 +61,32 @@ export default async function HomePage() {
             ))}
           </ul>
         )}
-        <Link href="/gallery" className={styles.textLink}>See every design in the gallery</Link>
+        <Link href="/gallery" className={styles.textLink}>See all our suits</Link>
+      </section>
+
+      <section className={`${site.container} ${styles.section}`} aria-labelledby="occasion-title">
+        <h2 id="occasion-title" className={styles.h2}>Suits for every day</h2>
+        <ul className={styles.collections}>
+          {OCCASIONS.map((c) => (
+            <li key={c.name}>
+              <h3 className={styles.collectionTitle}>{c.name}</h3>
+              <p className={styles.small}>{c.line}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className={`${site.container} ${styles.section}`} aria-labelledby="talk-title">
+        <h2 id="talk-title" className={styles.h2}>Talk to us</h2>
+        <p className={styles.body}>Ask about a suit, a size or a colour. We reply on WhatsApp.</p>
+        <ContactButtons />
       </section>
 
       <section className={`${site.container} ${styles.section}`} aria-labelledby="team-title">
-        <h2 id="team-title" className={styles.h2}>Ordering for a team?</h2>
-        <p className={styles.body}>Send a list of styles and sizes, or give us the date and the head count.</p>
+        <h2 id="team-title" className={styles.h2}>Buying many suits?</h2>
+        <p className={styles.body}>We sell to churches, offices and groups. Tell us how many suits you need and when you need them.</p>
         <div className={styles.actions}>
-          <Link href="/wholesale" className={styles.secondary}>Order in bulk</Link>
+          <Link href="/wholesale" className={styles.secondary}>Buy in bulk</Link>
         </div>
       </section>
     </>

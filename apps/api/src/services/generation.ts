@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
-import { Observation, type AiSettings, type GenerateRequest, type GenerationView, type GenStatus } from "@ff/shared";
+import { EMPTY_ANATOMY, Observation, type GenerateRequest, type GenerationView, type GenStatus } from "@ff/shared";
 import { HttpError } from "../lib/errors.ts";
 import type { AdminCatalogueRepo, AuditEntry, StoragePort } from "./admin-catalogue.ts";
+import { DRAW_PREFIX, OBSERVE_PROMPT, PROMPT_VERSION, directorPrompt, mergeAnatomy, pickVariant } from "../prompts.ts";
 import { DRAW_MODEL, GeminiFailure, OBSERVATION_SCHEMA, OBSERVE_MODEL, type GeminiPort, type ImagePart } from "./gemini.ts";
 
 export type GenRow = {
@@ -22,10 +23,6 @@ export type PriceRates = { observe_input_per_mtok_usd_micro: number; observe_out
 
 export interface GenerationRepo {
   setting<T>(key: string): Promise<T | null>;
-  setSetting(key: string, value: unknown, adminId: string): Promise<void>;
-  activeTemplate(name: string): Promise<{ name: string; version: number; body: string } | null>;
-  activeTemplates(): Promise<{ name: string; version: number; body: string }[]>;
-  saveTemplate(name: string, body: string, adminId: string): Promise<{ version: number }>;
   monthSpend(kind: "catalogue" | "tryon", sinceIso: string): Promise<number>;
   countForSuitSince(suitId: string, sinceIso: string): Promise<number>;
   hasActiveJob(suitId: string): Promise<boolean>;
@@ -43,11 +40,10 @@ export type GenerationDeps = {
   storage: StoragePort;
   gemini: GeminiPort;
   audit: (e: AuditEntry) => Promise<void>;
+  monthlyCapUsdMicro: number;
+  random?: () => number;
   now?: () => Date;
 };
-
-const GUARDRAILS =
-  "Match the reference garment exactly. Do not add buttons, pockets, belts, logos or trim that are not in the photos. Keep the exact colour of the fabric. Show one adult woman, full length, no text in the image.";
 
 export function lagosMonthStart(now: Date): string {
   const lagos = new Date(now.getTime() + 60 * 60 * 1000);
@@ -57,21 +53,6 @@ export function lagosMonthStart(now: Date): string {
 export function lagosDayStart(now: Date): string {
   const lagos = new Date(now.getTime() + 60 * 60 * 1000);
   return new Date(Date.UTC(lagos.getUTCFullYear(), lagos.getUTCMonth(), lagos.getUTCDate()) - 60 * 60 * 1000).toISOString();
-}
-
-function describe(o: Observation): string {
-  return [
-    `${o.garment}, ${o.colour_seen}`,
-    `fabric: ${o.fabric_look}`,
-    `neckline: ${o.neckline}`,
-    `sleeves: ${o.sleeves}`,
-    `length: ${o.length}`,
-    `trim: ${o.trim}`,
-    `pattern: ${o.pattern}`,
-    o.notes_for_drawer,
-  ]
-    .filter(Boolean)
-    .join("; ");
 }
 
 export function createGeneration(deps: GenerationDeps) {
@@ -117,17 +98,6 @@ export function createGeneration(deps: GenerationDeps) {
     const suit = await deps.catalogue.getSuit(suitId);
     if (!suit) throw new HttpError(404, "not_found", "No suit with that id.");
 
-    if ((await deps.gen.setting<boolean>("ai_kill_switch")) === true) {
-      throw new HttpError(503, "ai_disabled", "AI photos are switched off in settings.");
-    }
-
-    const direct = await deps.gen.activeTemplate("direct");
-    const observe = await deps.gen.activeTemplate("observe");
-    const notes = await deps.gen.setting<{ london: string; turkey: string }>("style_notes");
-    if (!direct || !observe || direct.body.includes("OWNER_TO_FILL") || !notes || notes[suit.style].includes("OWNER_TO_FILL")) {
-      throw new HttpError(422, "rule_failed", "The owners' AI instructions and style notes are not filled in yet.", [{ path: "prompts", message: "owner_to_fill" }]);
-    }
-
     const originals = suit.images.filter((i) => i.kind === "original");
     const sourceIds = input.source_image_ids ?? originals.slice(0, 4).map((i) => i.id);
     if (sourceIds.length === 0 || !sourceIds.every((id) => originals.some((o) => o.id === id))) {
@@ -141,7 +111,7 @@ export function createGeneration(deps: GenerationDeps) {
       throw new HttpError(429, "rate_limited", `This suit already had ${perDay} AI runs today. Try again tomorrow.`);
     }
 
-    const cap = (await deps.gen.setting<number>("ai_monthly_cap_usd_micro")) ?? 9_000_000;
+    const cap = deps.monthlyCapUsdMicro;
     const spent = await deps.gen.monthSpend("catalogue", lagosMonthStart(now()));
     const r = await rates();
     const estimate = costOf(r, 6000, 1000, input.candidates);
@@ -149,7 +119,7 @@ export function createGeneration(deps: GenerationDeps) {
 
     if (spent + estimate > cap) {
       await deps.gen.insert({ ...base, status: "blocked_budget", error: "budget" });
-      throw new HttpError(503, "budget_blocked", `This month's AI budget is used up ($${(spent / 1e6).toFixed(2)} of $${(cap / 1e6).toFixed(2)}). You can still publish with your own photo.`);
+      throw new HttpError(503, "budget_blocked", "AI photos are not available right now. You can still publish with your own photo.");
     }
 
     const { id } = await deps.gen.insert({ ...base, status: "queued" });
@@ -190,29 +160,27 @@ export function createGeneration(deps: GenerationDeps) {
       const sources = suit.images.filter((i) => sourceIds.includes(i.id));
       const refs = await Promise.all(sources.map(async (s) => toModelImage(await deps.storage.download(s.bucket, s.storage_path))));
 
-      const observeTpl = (await deps.gen.activeTemplate("observe"))!;
-      const directTpl = (await deps.gen.activeTemplate("direct"))!;
-      const notes = (await deps.gen.setting<{ london: string; turkey: string }>("style_notes"))!;
-
-      const seen = await deps.gemini.observe(observeTpl.body, refs, OBSERVATION_SCHEMA);
+      const seen = await deps.gemini.observe(OBSERVE_PROMPT, refs, OBSERVATION_SCHEMA);
       observeIn += seen.inputTokens;
       observeOut += seen.outputTokens;
       const parsed = Observation.safeParse(seen.json);
       if (!parsed.success) return finish("failed", "bad_observation");
-      const observation = parsed.data;
-      if (!observation.is_garment) return finish("failed", "not_a_garment", { observation });
+      if (!parsed.data.is_garment) return finish("failed", "not_a_garment", { observation: parsed.data });
+      const observation = mergeAnatomy(parsed.data, suit.anatomy ?? EMPTY_ANATOMY);
 
-      const finalPrompt = `${directTpl.body
-        .replaceAll("{{style_note}}", notes[suit.style])
-        .replaceAll("{{observation}}", describe(observation))
-        .replaceAll("{{extra}}", extra ?? "")}\n\n${GUARDRAILS}`;
+      const caption = extra?.trim() ?? "";
+      const variant = pickVariant(caption.length > 0, deps.random);
+      const directed = await deps.gemini.write(directorPrompt(observation, caption, variant));
+      observeIn += directed.inputTokens;
+      observeOut += directed.outputTokens;
+      const finalPrompt = `${DRAW_PREFIX}\n\n${directed.text}`;
       await deps.gen.update(id, {
         observation,
         final_prompt: finalPrompt,
         observe_model: OBSERVE_MODEL,
         draw_model: DRAW_MODEL,
         prompt_name: "direct",
-        prompt_version: directTpl.version,
+        prompt_version: PROMPT_VERSION,
       });
 
       let safety = false;
@@ -265,18 +233,6 @@ export function createGeneration(deps: GenerationDeps) {
     }
   }
 
-  async function settings(): Promise<AiSettings> {
-    return {
-      style_notes: (await deps.gen.setting<{ london: string; turkey: string }>("style_notes")) ?? { london: "", turkey: "" },
-      ai_kill_switch: (await deps.gen.setting<boolean>("ai_kill_switch")) ?? false,
-      ai_monthly_cap_usd_micro: (await deps.gen.setting<number>("ai_monthly_cap_usd_micro")) ?? 9_000_000,
-      month_spend_usd_micro: await deps.gen.monthSpend("catalogue", lagosMonthStart(now())),
-      tryon_enabled: (await deps.gen.setting<boolean>("tryon_enabled")) ?? false,
-      tryon_monthly_cap_usd_micro: (await deps.gen.setting<number>("tryon_monthly_cap_usd_micro")) ?? 2_000_000,
-      tryon_month_spend_usd_micro: await deps.gen.monthSpend("tryon", lagosMonthStart(now())),
-    };
-  }
-
   return {
     start,
     run,
@@ -288,24 +244,6 @@ export function createGeneration(deps: GenerationDeps) {
       return view(row);
     },
 
-    settings,
-
-    async updateSettings(adminId: string, patch: Partial<Pick<AiSettings, "style_notes" | "ai_kill_switch" | "ai_monthly_cap_usd_micro" | "tryon_enabled" | "tryon_monthly_cap_usd_micro">>) {
-      for (const [key, value] of Object.entries(patch)) {
-        if (value === undefined) continue;
-        await deps.gen.setSetting(key, value, adminId);
-        await deps.audit({ adminId, action: "settings.update", targetType: "setting", targetId: key });
-      }
-      return settings();
-    },
-
-    prompts: () => deps.gen.activeTemplates(),
-
-    async updatePrompt(adminId: string, name: string, body: string) {
-      const saved = await deps.gen.saveTemplate(name, body, adminId);
-      await deps.audit({ adminId, action: "prompt.activate", targetType: "prompt", targetId: name, detail: { version: saved.version } });
-      return deps.gen.activeTemplates();
-    },
   };
 }
 

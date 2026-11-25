@@ -38,7 +38,7 @@ export async function SiteShell({ theme, children }: { theme: "light" | "dark"; 
             </p>
           </div>
           <div>
-            <p className={styles.footerLabel}>Follow new designs</p>
+            <p className={styles.footerLabel}>See new suits first</p>
             {whatsapp && (
               <p className={styles.footerText}>
                 <a href={whatsapp} target="_blank" rel="noopener" data-track-join="">WhatsApp channel</a>
@@ -52,8 +52,8 @@ export async function SiteShell({ theme, children }: { theme: "light" | "dark"; 
             <p className={styles.footerText}><a href="mailto:frankiefabrics@yahoo.com">frankiefabrics@yahoo.com</a></p>
           </div>
           <div>
-            <p className={styles.footerLabel}>Information</p>
-            <p className={styles.footerText}><Link href="/wholesale">Wholesale</Link></p>
+            <p className={styles.footerLabel}>More</p>
+            <p className={styles.footerText}><Link href="/wholesale">Buy in bulk</Link></p>
             <p className={styles.footerText}><Link href="/delivery-and-refunds">Delivery and refunds</Link></p>
             <p className={styles.footerText}><Link href="/privacy">Privacy</Link></p>
             <p className={styles.footerText}><PrivacySettingsButton className={styles.footerButton} /></p>

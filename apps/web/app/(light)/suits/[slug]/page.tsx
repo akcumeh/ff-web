@@ -36,8 +36,8 @@ export default async function SuitPage({ params }: Params) {
   if (result.kind === "offline") {
     return (
       <div className={`${site.container} ${styles.section}`}>
-        <h1 className={styles.h1}>This design could not be loaded</h1>
-        <p className={styles.body}>Reload the page in a moment.</p>
+        <h1 className={styles.h1}>This suit could not load</h1>
+        <p className={styles.body}>Please refresh the page.</p>
       </div>
     );
   }
@@ -57,12 +57,12 @@ export default async function SuitPage({ params }: Params) {
             ) : (
               <div className={cards.noPhoto} aria-hidden="true" />
             )}
-            {suit.cover_is_ai && <figcaption className={page.caption}>AI-styled image</figcaption>}
+            {suit.cover_is_ai && <figcaption className={page.caption}>Picture made with AI</figcaption>}
           </figure>
           {suit.real_photo && (
             <figure className={page.figure}>
               <SuitImage img={suit.real_photo} sizes="(max-width: 860px) 45vw, 260px" className={page.photo} />
-              <figcaption className={page.caption}>The cloth as photographed</figcaption>
+              <figcaption className={page.caption}>Real photo of the suit</figcaption>
             </figure>
           )}
         </div>
@@ -72,8 +72,8 @@ export default async function SuitPage({ params }: Params) {
           <p className={styles.sub}>Ref {suit.ref}</p>
           {(suit.is_latest || suit.is_past || suit.sold_out) && (
             <p className={cards.tags}>
-              {suit.is_latest && <span className={cards.tag}>Latest</span>}
-              {suit.is_past && <span className={cards.tag}>Past design</span>}
+              {suit.is_latest && <span className={cards.tag}>New</span>}
+              {suit.is_past && <span className={cards.tag}>No longer in store</span>}
               {suit.sold_out && <span className={cards.tag}>Sold out</span>}
             </p>
           )}
@@ -91,7 +91,7 @@ export default async function SuitPage({ params }: Params) {
 
           {config.tryon_enabled && (
             <p className={styles.small}>
-              <Link href={`/changing-room?suit=${suit.slug}`} className={styles.textLink}>Try it on in the changing room</Link>
+              <Link href={`/changing-room?suit=${suit.slug}`} className={styles.textLink}>Try this suit on</Link>
             </p>
           )}
           <p className={styles.small}>
@@ -102,7 +102,7 @@ export default async function SuitPage({ params }: Params) {
 
       {suit.related.length > 0 && (
         <section className={styles.section} aria-labelledby="related-title">
-          <h2 id="related-title" className={styles.h2}>More from this style</h2>
+          <h2 id="related-title" className={styles.h2}>More suits like this</h2>
           <ul className={cards.grid}>
             {suit.related.map((s) => (
               <li key={s.id}><SuitCardLink suit={s} /></li>
@@ -112,7 +112,7 @@ export default async function SuitPage({ params }: Params) {
       )}
 
       <p className={styles.section}>
-        <Link href="/gallery" className={styles.textLink}>Back to the gallery</Link>
+        <Link href="/gallery" className={styles.textLink}>See all suits</Link>
       </p>
     </div>
   );

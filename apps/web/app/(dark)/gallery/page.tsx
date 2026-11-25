@@ -12,7 +12,7 @@ import gallery from "./gallery.module.css";
 
 export const metadata: Metadata = buildMetadata({
   title: "Gallery",
-  description: "Ladies' London style and Turkey style suits in store now, and past designs.",
+  description: "Ladies' London style and Turkey style suits. See what we have now.",
   path: "/gallery",
 });
 
@@ -53,8 +53,8 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
   return (
     <div className={site.container}>
       <section className={styles.section} aria-labelledby="gallery-title">
-        <h1 id="gallery-title" className={styles.h1}>Gallery</h1>
-        <p className={styles.body}>Suits in store now and ones we had before. Use the arrows, swipe, or switch to the grid.</p>
+        <h1 id="gallery-title" className={styles.h1}>Our suits</h1>
+        <p className={styles.body}>Swipe to see more, or tap Grid to see them all at once.</p>
 
         <div className={gallery.filters}>
           <ul className={gallery.chips} aria-label="Style">
@@ -77,7 +77,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
           </ul>
           <ul className={gallery.chips} aria-label="View">
             <li>
-              <Link href={hrefWith(current, { view: undefined })} className={gallery.chip} aria-current={view === "carousel" ? "true" : undefined}>Carousel</Link>
+              <Link href={hrefWith(current, { view: undefined })} className={gallery.chip} aria-current={view === "carousel" ? "true" : undefined}>One by one</Link>
             </li>
             <li>
               <Link href={hrefWith(current, { view: "grid" })} className={gallery.chip} aria-current={view === "grid" ? "true" : undefined}>Grid</Link>
@@ -85,11 +85,11 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
           </ul>
         </div>
 
-        {list === null && <p className={styles.notice}>The designs could not be loaded just now. Reload the page in a moment.</p>}
-        {list && list.items.length === 0 && <p className={styles.notice}>No designs match. Try a longer range or another style.</p>}
+        {list === null && <p className={styles.notice}>The suits could not load just now. Please refresh the page.</p>}
+        {list && list.items.length === 0 && <p className={styles.notice}>No suits here. Try another style or a longer time.</p>}
 
         {list && list.items.length > 0 && view === "carousel" && (
-          <Carousel label="Designs, use the left and right arrow keys to move">
+          <Carousel label="Suits. Use the left and right arrow keys to move">
             {list.items.map((s, i) => (
               <li key={s.id}><SuitCardLink suit={s} priority={i < 2} /></li>
             ))}

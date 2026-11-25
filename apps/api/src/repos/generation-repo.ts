@@ -14,32 +14,6 @@ export function supabaseGenerationRepo(db: SupabaseClient): GenerationRepo {
       check(error, "setting read");
       return (data?.value ?? null) as T | null;
     },
-    async setSetting(key, value, adminId) {
-      const { error } = await db.from("settings").upsert({ key, value, updated_by: adminId });
-      check(error, "setting write");
-    },
-    async activeTemplate(name) {
-      const { data, error } = await db.from("prompt_templates").select("name, version, body").eq("name", name).eq("is_active", true).maybeSingle();
-      check(error, "template read");
-      return data;
-    },
-    async activeTemplates() {
-      const { data, error } = await db.from("prompt_templates").select("name, version, body").eq("is_active", true).order("name");
-      check(error, "template list");
-      return data ?? [];
-    },
-    async saveTemplate(name, body, adminId) {
-      const { data: latest, error: e1 } = await db.from("prompt_templates").select("version").eq("name", name).order("version", { ascending: false }).limit(1).maybeSingle();
-      check(e1, "template version");
-      const version = (latest?.version ?? 0) + 1;
-      const { data: created, error: e2 } = await db.from("prompt_templates").insert({ name, version, body, is_active: false, created_by: adminId }).select("id").single();
-      check(e2, "template insert");
-      const { error: e3 } = await db.from("prompt_templates").update({ is_active: false }).eq("name", name).eq("is_active", true);
-      check(e3, "template deactivate");
-      const { error: e4 } = await db.from("prompt_templates").update({ is_active: true }).eq("id", created!.id);
-      check(e4, "template activate");
-      return { version };
-    },
     async monthSpend(kind, sinceIso) {
       const { data, error } = await db.from("ai_generations").select("cost_usd_micro").eq("kind", kind).gte("created_at", sinceIso);
       check(error, "month spend");

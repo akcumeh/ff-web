@@ -18,11 +18,11 @@ export function SuitCardLink({ suit, priority = false }: { suit: SuitCard; prior
       <p className={styles.priceSmall}>{formatNaira(suit.price_kobo)}</p>
       {(suit.is_past || suit.sold_out) && (
         <p className={styles.tags}>
-          {suit.is_past && <span className={styles.tag}>Past design</span>}
+          {suit.is_past && <span className={styles.tag}>No longer in store</span>}
           {suit.sold_out && <span className={styles.tag}>Sold out</span>}
         </p>
       )}
-      <span className={styles.cardLink}>See this design</span>
+      <span className={styles.cardLink}>See this suit</span>
     </Link>
   );
 }

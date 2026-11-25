@@ -16,7 +16,7 @@ import type { Channels } from "./services/channels.ts";
 import type { AdminCatalogueRepo } from "./services/admin-catalogue.ts";
 
 export type AppDeps = {
-  allowedOrigins: string[];
+  allowedOrigins: (string | RegExp)[];
   auth: AuthDeps;
   catalogue: Catalogue;
   adminCatalogue: AdminCatalogue;
