@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { waitUntil } from "@vercel/functions";
-import { AiSettingsUpdate, GenerateRequest, PromptName, PromptUpdate } from "@ff/shared";
+import { GenerateRequest } from "@ff/shared";
 import { currentAdmin } from "../lib/auth.ts";
 import { HttpError } from "../lib/errors.ts";
 import type { Generation } from "../services/generation.ts";
@@ -33,24 +33,6 @@ export function adminAiRouter(generation: Generation, background: (p: Promise<un
   r.get("/generations/:id", async (req, res) => {
     const { id } = parse(IdParam, req.params);
     res.json(await generation.get(id));
-  });
-
-  r.get("/prompts", async (_req, res) => {
-    res.json({ items: await generation.prompts() });
-  });
-
-  r.patch("/prompts/:name", async (req, res) => {
-    const name = parse(z.object({ name: PromptName }), req.params).name;
-    const { body } = parse(PromptUpdate, req.body);
-    res.json({ items: await generation.updatePrompt(currentAdmin(res).adminId, name, body) });
-  });
-
-  r.get("/settings", async (_req, res) => {
-    res.json(await generation.settings());
-  });
-
-  r.patch("/settings", async (req, res) => {
-    res.json(await generation.updateSettings(currentAdmin(res).adminId, parse(AiSettingsUpdate, req.body)));
   });
 
   return r;

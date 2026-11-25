@@ -15,7 +15,6 @@ export default async function AdminSuitsPage() {
 
   return (
     <main id="main" className={styles.page}>
-      <p className={styles.wordmark}>Frankie Suits</p>
       <AdminNav />
       <h1 className={styles.title}>Suits</h1>
 

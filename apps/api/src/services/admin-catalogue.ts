@@ -5,6 +5,7 @@ import type {
   AdminSuitSummary,
   Batch,
   SelectImage,
+  SuitAnatomy,
   SuitCreate,
   SuitPatch,
   UploadSignRequest,
@@ -34,6 +35,7 @@ export type ImageRecord = {
 };
 
 export type AdminSuitRow = {
+  anatomy?: SuitAnatomy;
   id: string;
   ref: string;
   slug: string;
@@ -322,7 +324,7 @@ export function createAdminCatalogue(deps: AdminCatalogueDeps) {
       const img = s.images.find((i) => i.id === wantedId && i.kind === wantedKind);
       if (!img) throw new HttpError(404, "not_found", "That photo is not part of this suit.");
       await repo.clearCover(id);
-      await repo.updateImage(img.id, { alt_text: input.alt_text, is_cover: true });
+      await repo.updateImage(img.id, { alt_text: input.alt_text ?? img.alt_text ?? `${s.title} suit`.slice(0, 125), is_cover: true });
       await deps.audit({ adminId, action: "image.select", targetType: "suit", targetId: id, detail: { image: img.id } });
       return toDetail(await mustGet(id));
     },

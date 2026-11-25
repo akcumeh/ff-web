@@ -93,6 +93,8 @@
   --sub-md: 400 17px/24px var(--font-sub);
   --sub-md-tracking: 0.3px;
   --sub-caps: 400 12px/16px var(--font-sub);
+  --ui: 500 16px/24px var(--font-body);
+  --ui-sm: 500 14px/20px var(--font-body);
   --sub-caps-tracking: 2px;
 
   --space-1: 8px;

@@ -18,7 +18,6 @@ export default async function PostsPage() {
 
   return (
     <main id="main" className={styles.page}>
-      <p className={styles.wordmark}>Frankie Suits</p>
       <AdminNav />
       <h1 className={styles.title}>To post on WhatsApp</h1>
       <p className={styles.lead}>WhatsApp has no way for the site to post into the channel, so each new suit waits here. Save the image, copy the caption, post it in the channel, then press I posted it.</p>

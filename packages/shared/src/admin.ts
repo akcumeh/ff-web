@@ -69,7 +69,7 @@ export type SuitPatch = z.infer<typeof SuitPatch>;
 export const SelectImage = z.strictObject({
   original_image_id: z.uuid().optional(),
   candidate_image_id: z.uuid().optional(),
-  alt_text: z.string().trim().min(1, "Describe the photo").max(125, "Keep it to 125 characters"),
+  alt_text: z.string().trim().min(1).max(125).optional(),
 });
 export type SelectImage = z.infer<typeof SelectImage>;
 export const SelectImageChecked = SelectImage.refine((v) => Boolean(v.original_image_id) !== Boolean(v.candidate_image_id), { message: "Pick one photo", path: ["image"] });

@@ -18,6 +18,7 @@ export class GeminiFailure extends Error {
 
 export interface GeminiPort {
   observe(prompt: string, images: ImagePart[], schema: object): Promise<{ json: unknown } & Usage>;
+  write(prompt: string): Promise<{ text: string } & Usage>;
   draw(prompt: string, refs: ImagePart[]): Promise<{ image: ImagePart } & Usage>;
 }
 
@@ -94,6 +95,16 @@ export function createGemini(opts: GeminiOptions): GeminiPort {
       }
     },
 
+    async write(prompt) {
+      const { res, inputTokens, outputTokens } = await call(OBSERVE_MODEL, {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7 },
+      });
+      const text = res.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text?.trim();
+      if (!text) throw new GeminiFailure("failed", "empty_prompt", { inputTokens, outputTokens });
+      return { text, inputTokens, outputTokens };
+    },
+
     async draw(prompt, refs) {
       const { res, inputTokens, outputTokens } = await call(DRAW_MODEL, {
         contents: [{ role: "user", parts: [{ text: prompt }, ...refs.map(inline)] }],
@@ -114,17 +125,19 @@ export const OBSERVATION_SCHEMA = {
   type: "OBJECT",
   properties: {
     is_garment: { type: "BOOLEAN" },
-    garment: { type: "STRING" },
-    colour_seen: { type: "STRING" },
-    fabric_look: { type: "STRING" },
-    neckline: { type: "STRING" },
-    sleeves: { type: "STRING" },
-    length: { type: "STRING" },
-    trim: { type: "STRING" },
+    color: { type: "STRING" },
     pattern: { type: "STRING" },
-    notes_for_drawer: { type: "STRING" },
+    texture: { type: "STRING" },
+    type: { type: "STRING", enum: ["skirt-suit", "gown-suit"], nullable: true },
+    skirt_length: { type: "STRING", enum: ["knee", "3/4", "full"], nullable: true },
+    gown_length: { type: "STRING", enum: ["3/4", "full"], nullable: true },
+    sleeve_length: { type: "STRING", enum: ["3/4", "full"], nullable: true },
+    has_camisole: { type: "BOOLEAN", nullable: true },
+    has_belt: { type: "BOOLEAN", nullable: true },
+    has_no_jacket: { type: "BOOLEAN", nullable: true },
+    notes: { type: "STRING" },
     alt_text: { type: "STRING", description: "125 characters or fewer" },
     problems: { type: "ARRAY", items: { type: "STRING", enum: ["blur", "cropped", "dark", "folded"] } },
   },
-  required: ["is_garment", "garment", "colour_seen", "fabric_look", "neckline", "sleeves", "length", "trim", "pattern", "notes_for_drawer", "alt_text", "problems"],
+  required: ["is_garment", "color", "pattern", "texture", "type", "skirt_length", "gown_length", "sleeve_length", "has_camisole", "has_belt", "has_no_jacket", "notes", "alt_text", "problems"],
 };

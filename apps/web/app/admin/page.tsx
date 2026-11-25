@@ -15,7 +15,6 @@ export default async function AdminHomePage() {
 
   return (
     <main id="main" className={styles.page}>
-      <p className={styles.wordmark}>Frankie Suits</p>
 
       {result.kind === "ok" && (
         <>

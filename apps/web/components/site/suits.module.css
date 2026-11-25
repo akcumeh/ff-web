@@ -33,8 +33,7 @@
 
 .cardDetail {
   margin: 0;
-  font: var(--sub-md);
-  letter-spacing: var(--sub-md-tracking);
+  font: var(--body-sm);
   color: var(--ink-soft);
 }
 
@@ -69,9 +68,7 @@
 .tag {
   padding: 2px 8px;
   border: 1px solid var(--line);
-  font: var(--sub-caps);
-  letter-spacing: var(--sub-caps-tracking);
-  text-transform: uppercase;
+  font: var(--ui-sm);
 }
 
 .grid {

@@ -32,9 +32,7 @@ body {
   padding: 12px 16px;
   background: var(--accent);
   color: var(--on-accent);
-  font: var(--sub-caps);
-  letter-spacing: var(--sub-caps-tracking);
-  text-transform: uppercase;
+  font: var(--ui);
 }
 .skip-link:focus {
   top: 16px;

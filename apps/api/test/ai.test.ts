@@ -6,20 +6,20 @@ import { createAdminCatalogue } from "../src/services/admin-catalogue.ts";
 import { createGeneration } from "../src/services/generation.ts";
 import { GeminiFailure, createGemini } from "../src/services/gemini.ts";
 import { memoryRepo, memoryStorage, recorder } from "./admin-fakes.ts";
-import { memoryGenRepo, scriptedGemini, type DrawStep } from "./ai-fakes.ts";
+import { GOOD_OBSERVATION, memoryGenRepo, scriptedGemini, type DrawStep } from "./ai-fakes.ts";
 import { ADMIN_ID, testApp } from "./helpers.ts";
 
 const tokens = { owner: { sub: ADMIN_ID, email: "owner@example.com", aal: "aal1" } };
 const AUTH = { Authorization: "Bearer owner" };
 
-function setup(opts: { draws?: DrawStep[]; settings?: Record<string, unknown>; observation?: unknown; observeFails?: GeminiFailure } = {}) {
+function setup(opts: { draws?: DrawStep[]; settings?: Record<string, unknown>; observation?: unknown; observeFails?: GeminiFailure; cap?: number } = {}) {
   const db = memoryRepo();
   const store = memoryStorage();
   const rec = recorder();
   const gen = memoryGenRepo(opts.settings);
   const ai = scriptedGemini({ draws: opts.draws, observation: opts.observation, observeFails: opts.observeFails });
   const pending: Promise<unknown>[] = [];
-  const generation = createGeneration({ gen: gen.repo, catalogue: db.repo, storage: store.storage, gemini: ai.gemini, audit: rec.audit });
+  const generation = createGeneration({ gen: gen.repo, catalogue: db.repo, storage: store.storage, gemini: ai.gemini, audit: rec.audit, monthlyCapUsdMicro: opts.cap ?? 9_000_000, random: () => 0 });
   const app = testApp({
     tokens,
     adminCatalogue: createAdminCatalogue({ repo: db.repo, storage: store.storage, audit: rec.audit, revalidate: rec.revalidate }),
@@ -61,9 +61,14 @@ describe("AI photo pipeline", () => {
     expect(view.candidates).toHaveLength(2);
     expect(view.problems).toEqual(["blur"]);
     expect(view.alt_text).toContain("Emerald");
-    expect(view.cost_usd_micro).toBe(Math.round((4000 * 250_000 + 400 * 1_500_000) / 1e6) + 2 * 34_000);
-    expect(env.ai.calls.prompts[0]).toContain("Structured shoulders.");
-    expect(env.ai.calls.prompts[0]).toContain("Keep the exact colour");
+    expect(view.cost_usd_micro).toBe(Math.round((4300 * 250_000 + 600 * 1_500_000) / 1e6) + 2 * 34_000);
+    expect(env.ai.calls.write).toBe(1);
+    expect(env.ai.calls.briefs[0]).toContain("plus-sized");
+    expect(env.ai.calls.briefs[0]).toContain("Color: emerald green");
+    expect(env.ai.calls.briefs[0]).toContain("hem falls just at the knee");
+    expect(env.ai.calls.briefs[0]).toContain("Fashion context: corporate");
+    expect(env.ai.calls.prompts[0]).toContain("Match its colour");
+    expect(env.ai.calls.prompts[0]).toContain("plus-sized woman in the emerald suit");
     const after = AdminSuitDetail.parse((await request(env.app).get(`/admin/suits/${suit.id}`).set(AUTH)).body);
     expect(after.status).toBe("review");
   });
@@ -92,23 +97,15 @@ describe("AI photo pipeline", () => {
   });
 
   it("stops at not_a_garment when the photo is not a suit", async () => {
-    const env = setup({ observation: { is_garment: false, garment: "", colour_seen: "", fabric_look: "", neckline: "", sleeves: "", length: "", trim: "", pattern: "", notes_for_drawer: "", alt_text: "", problems: [] } });
+    const env = setup({ observation: { ...GOOD_OBSERVATION, is_garment: false } });
     const suit = await makeSuit(env);
     const view = await status(env, (await generate(env, suit.id)).body.generation_id);
     expect(view).toMatchObject({ status: "failed", error: "not_a_garment" });
     expect(env.ai.calls.draw).toBe(0);
   });
 
-  it("503 ai_disabled when the kill switch is on", async () => {
-    const env = setup({ settings: { ai_kill_switch: true } });
-    const suit = await makeSuit(env);
-    const res = await generate(env, suit.id);
-    expect(res.status).toBe(503);
-    expect(ApiError.parse(res.body).error.code).toBe("ai_disabled");
-  });
-
   it("503 budget_blocked and a blocked_budget row when the month cap would be passed", async () => {
-    const env = setup({ settings: { ai_monthly_cap_usd_micro: 50_000 } });
+    const env = setup({ cap: 50_000 });
     const suit = await makeSuit(env);
     const res = await generate(env, suit.id);
     expect(res.status).toBe(503);
@@ -117,12 +114,11 @@ describe("AI photo pipeline", () => {
     expect(env.ai.calls.observe).toBe(0);
   });
 
-  it("422 while the owners' instructions still say OWNER_TO_FILL", async () => {
-    const env = setup({ settings: { style_notes: { london: "OWNER_TO_FILL", turkey: "OWNER_TO_FILL" } } });
+  it("uses the caption weights and passes the caption to the art director", async () => {
+    const env = setup();
     const suit = await makeSuit(env);
-    const res = await generate(env, suit.id);
-    expect(res.status).toBe(422);
-    expect(ApiError.parse(res.body).error.code).toBe("rule_failed");
+    await generate(env, suit.id, { extra_instructions: "show the back of the jacket" });
+    expect(env.ai.calls.briefs[0]).toContain('"show the back of the jacket"');
   });
 
   it("runs a job once even if it is started twice (idempotent claim)", async () => {

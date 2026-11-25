@@ -24,7 +24,6 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
   const [description, setDescription] = useState(suit.description ?? "");
   const [price, setPrice] = useState(String(suit.price_kobo / 100));
   const [variants, setVariants] = useState<VariantDraft[]>(toDrafts(suit));
-  const [alts, setAlts] = useState<Record<string, string>>(Object.fromEntries(suit.images.map((i) => [i.id, i.alt_text ?? ""])));
   const [fields, setFields] = useState<Record<string, string>>({});
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -67,16 +66,9 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
   const toggleStock = (id: string, inStock: boolean) =>
     run("Saving.", () => adminCall("PATCH", `/suits/${suit.id}`, { variant_updates: [{ id, in_stock: inStock }] }), "Saved.");
 
-  const altFor = (img: { id: string; alt_text: string | null }) => alts[img.id] ?? img.alt_text ?? "";
-
-  const chooseCover = (img: { id: string; kind: string; alt_text: string | null }) => {
-    const alt = altFor(img).trim();
-    if (!alt) {
-      setFields({ [`alt-${img.id}`]: "Describe the photo first, for example: Navy London style suit on a hanger" });
-      return;
-    }
+  const chooseCover = (img: { id: string; kind: string }) => {
     const ref = img.kind === "candidate" ? { candidate_image_id: img.id } : { original_image_id: img.id };
-    void run("Choosing the photo.", () => adminCall("POST", `/suits/${suit.id}/select-image`, { ...ref, alt_text: alt }), "Photo chosen.");
+    void run("Choosing the photo.", () => adminCall("POST", `/suits/${suit.id}/select-image`, ref), "Photo chosen.");
   };
 
   const publish = () => run("Publishing. This can take a few seconds.", () => adminCall("POST", `/suits/${suit.id}/publish`, {}), "Published. It is on the site now.");
@@ -126,19 +118,8 @@ export function SuitEditor({ suit, siteUrl }: { suit: AdminSuitDetail; siteUrl: 
             <figure key={img.id} className={styles.thumb} data-cover={img.is_cover}>
               <img src={img.url} alt={img.alt_text || (img.kind === "candidate" ? "AI draft" : "Uploaded photo")} />
               <figcaption className={styles.hint}>{img.kind === "candidate" ? "AI draft" : "Your photo"}</figcaption>
-              <label htmlFor={`alt-${img.id}`} className={styles.label}>Describe this photo</label>
-              <input
-                id={`alt-${img.id}`}
-                className={styles.input}
-                maxLength={125}
-                value={altFor(img)}
-                onChange={(e) => setAlts({ ...alts, [img.id]: e.target.value })}
-                aria-invalid={Boolean(fields[`alt-${img.id}`])}
-                aria-describedby={fields[`alt-${img.id}`] ? `alt-${img.id}-error` : undefined}
-              />
-              {fields[`alt-${img.id}`] && <p id={`alt-${img.id}-error`} className={styles.error}>{fields[`alt-${img.id}`]}</p>}
               {img.is_cover ? (
-                <span className={styles.hint}>Chosen. Publish to show it.</span>
+                <span className={styles.hint}>Chosen</span>
               ) : (
                 <button type="button" className={styles.secondary} onClick={() => chooseCover(img)} disabled={busy}>Use this photo</button>
               )}

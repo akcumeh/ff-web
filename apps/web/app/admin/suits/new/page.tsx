@@ -13,7 +13,6 @@ export default async function NewSuitPage() {
 
   return (
     <main id="main" className={styles.page}>
-      <p className={styles.wordmark}>Frankie Suits</p>
       <AdminNav />
       <h1 className={styles.title}>New suit</h1>
       <p className={styles.lead}>It is saved as a draft. Nothing shows on the site until you publish it.</p>

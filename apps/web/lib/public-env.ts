@@ -14,3 +14,9 @@ export function whatsappNumber(): string | null {
 }
 
 export const HEAD_OFFICE_TEL = "07081156800";
+
+export const PHONES = [
+  { tel: "07081156800", where: "Head office" },
+  { tel: "07069743721", where: "Branch office" },
+  { tel: "08098269558", where: "Branch office" },
+] as const;

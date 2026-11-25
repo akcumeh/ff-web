@@ -24,7 +24,6 @@ export default async function EditSuitPage({ params }: { params: Promise<{ id: s
 
   return (
     <main id="main" className={styles.page}>
-      <p className={styles.wordmark}>Frankie Suits</p>
       <AdminNav />
       {result.kind === "ok" ? (
         <>

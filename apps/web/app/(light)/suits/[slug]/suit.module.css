@@ -41,9 +41,7 @@
 
 .label {
   margin: var(--space-2) 0 0;
-  font: var(--sub-caps);
-  letter-spacing: var(--sub-caps-tracking);
-  text-transform: uppercase;
+  font: var(--ui-sm);
 }
 
 .colours {

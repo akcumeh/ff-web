@@ -17,7 +17,7 @@ async function forward(request: NextRequest, ctx: { params: Promise<{ path: stri
     const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
     const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
     const allowed = new Set([new URL(env.NEXT_PUBLIC_SITE_URL).origin, ...(host ? [`${proto}://${host}`] : [])]);
-    if (!origin || !allowed.has(origin) || site !== "same-origin") {
+    if (!origin || !allowed.has(origin) || (site !== null && site !== "same-origin")) {
       return fail(403, "forbidden_origin", "This request did not come from the admin site.");
     }
   }

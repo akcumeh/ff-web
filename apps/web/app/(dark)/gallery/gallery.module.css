@@ -22,9 +22,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-square);
   color: var(--ink);
-  font: var(--sub-caps);
-  letter-spacing: var(--sub-caps-tracking);
-  text-transform: uppercase;
+  font: var(--ui-sm);
   text-decoration: none;
 }
 
