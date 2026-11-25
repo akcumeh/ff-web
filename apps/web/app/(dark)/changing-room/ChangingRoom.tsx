@@ -8,7 +8,7 @@ import styles from "./room.module.css";
 
 type Option = { slug: string; ref: string; title: string; thumb: string | null };
 
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+const API = "/ffapi";
 
 async function shrink(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -38,8 +38,8 @@ export function ChangingRoom({ suits, initial }: { suits: Option[]; initial: str
     if (!ready || !file) return;
     setBusy(true);
     setResult(null);
-    setStatus("Making your picture. This usually takes under a minute.");
-    const slow = setTimeout(() => setStatus("This is taking longer than usual. You can wait a little more or try again."), 60_000);
+    setStatus("Making your picture. Please wait, it takes about one minute.");
+    const slow = setTimeout(() => setStatus("This is taking longer than usual. Please wait a little more, or try again."), 60_000);
     try {
       const photo = await shrink(file);
       const cookie = visitorCookieIfAccepted();
@@ -51,13 +51,13 @@ export function ChangingRoom({ suits, initial }: { suits: Option[]; initial: str
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const err = ApiError.safeParse(body);
-        setStatus(err.success ? err.data.error.message : "Something went wrong. Try again.");
+        setStatus(err.success ? err.data.error.message : "Something went wrong. Please try again.");
         return;
       }
       setResult(`data:image/jpeg;base64,${(body as { image_base64: string }).image_base64}`);
-      setStatus("Here you are. This is a rough idea made by AI, not a fitting.");
+      setStatus("Here you are! The picture shows how the suit looks on you. It is not exact.");
     } catch {
-      setStatus("That photo could not be used, or the connection dropped. Try again.");
+      setStatus("We could not use that photo, or your internet cut off. Please try again.");
     } finally {
       clearTimeout(slow);
       setBusy(false);
@@ -69,7 +69,7 @@ export function ChangingRoom({ suits, initial }: { suits: Option[]; initial: str
   return (
     <div className={styles.room}>
       <fieldset className={styles.step}>
-        <legend className={styles.legend}>1. Choose a design</legend>
+        <legend className={styles.legend}>1. Pick a suit</legend>
         <div className={styles.suits}>
           {suits.map((s) => (
             <label key={s.slug} className={styles.suit}>
@@ -83,15 +83,15 @@ export function ChangingRoom({ suits, initial }: { suits: Option[]; initial: str
 
       <div className={styles.step}>
         <label htmlFor="photo" className={styles.legend}>2. Add your photo</label>
-        <p id="photo-hint" className={styles.hint}>One clear photo of you standing, front on, works best.</p>
+        <p id="photo-hint" className={styles.hint}>Use a clear photo of you standing and facing the camera.</p>
         <input id="photo" type="file" accept="image/*" aria-describedby="photo-hint" className={styles.file} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       </div>
 
       <fieldset className={styles.step}>
-        <legend className={styles.legend}>3. Before we start</legend>
+        <legend className={styles.legend}>3. Please tick both boxes</legend>
         <label className={styles.check}>
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-          <span>I agree my photo is sent to Google&rsquo;s AI to make this picture. It is not saved.</span>
+          <span>I agree my photo is sent to Google to make the picture. We do not keep it.</span>
         </label>
         <label className={styles.check}>
           <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
@@ -111,8 +111,8 @@ export function ChangingRoom({ suits, initial }: { suits: Option[]; initial: str
       {result && chosen && (
         <figure className={styles.result}>
           <img src={result} alt={`AI-styled preview of you in ${chosen.title}, Ref ${chosen.ref}`} />
-          <figcaption className={styles.badge}>AI-styled preview</figcaption>
-          <Link href={`/suits/${chosen.slug}`} className={styles.primary}>See this design and order</Link>
+          <figcaption className={styles.badge}>Picture made with AI</figcaption>
+          <Link href={`/suits/${chosen.slug}`} className={styles.primary}>Buy this suit</Link>
         </figure>
       )}
     </div>

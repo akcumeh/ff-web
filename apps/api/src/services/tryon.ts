@@ -4,6 +4,7 @@ import { z } from "zod";
 import { HttpError } from "../lib/errors.ts";
 import type { StoragePort } from "./admin-catalogue.ts";
 import { GeminiFailure, type GeminiPort } from "./gemini.ts";
+import { TRYON_PROMPT } from "../prompts.ts";
 import { lagosDayStart, lagosMonthStart, type GenerationRepo, type PriceRates } from "./generation.ts";
 
 export const TryonRequest = z.strictObject({
@@ -25,6 +26,8 @@ export type TryonDeps = {
   suitBySlug: (slug: string) => Promise<TryonSuit | null>;
   visitorSecret: string | undefined;
   ipSecret: string | undefined;
+  enabled: boolean;
+  monthlyCapUsdMicro: number;
   now?: () => Date;
 };
 
@@ -35,12 +38,11 @@ export function createTryon(deps: TryonDeps) {
 
   return {
     async enabled(): Promise<boolean> {
-      return (await deps.gen.setting<boolean>("tryon_enabled")) === true && (await deps.gen.setting<boolean>("ai_kill_switch")) !== true;
+      return deps.enabled;
     },
 
     async run(input: TryonRequest, ip: string | undefined): Promise<{ image_base64: string; label: string }> {
-      if ((await deps.gen.setting<boolean>("tryon_enabled")) !== true) throw new HttpError(503, "ai_disabled", "The changing room is closed right now.");
-      if ((await deps.gen.setting<boolean>("ai_kill_switch")) === true) throw new HttpError(503, "ai_disabled", "The changing room is closed right now.");
+      if (!deps.enabled) throw new HttpError(503, "ai_disabled", "The changing room is closed right now.");
 
       const day = now().toISOString().slice(0, 10);
       const addressHash = deps.ipSecret ? hmac(deps.ipSecret, `${ip ?? "unknown"}|${day}`) : "no-ip-secret";
@@ -58,7 +60,7 @@ export function createTryon(deps: TryonDeps) {
       }
 
       const rates = (await deps.gen.setting<PriceRates>("price_rates")) ?? { observe_input_per_mtok_usd_micro: 0, observe_output_per_mtok_usd_micro: 0, image_1k_usd_micro: 34_000 };
-      const cap = (await deps.gen.setting<number>("tryon_monthly_cap_usd_micro")) ?? 2_000_000;
+      const cap = deps.monthlyCapUsdMicro;
       if ((await deps.gen.monthSpend("tryon", lagosMonthStart(now()))) + rates.image_1k_usd_micro > cap) {
         await deps.gen.insert({ kind: "tryon", suit_id: null, status: "blocked_budget", candidate_count: 1, requester_hash: requester });
         throw new HttpError(503, "budget_blocked", "The changing room is busy this month. Ask us about the suit on WhatsApp instead.");
@@ -76,14 +78,12 @@ export function createTryon(deps: TryonDeps) {
         throw new HttpError(422, "rule_failed", "That photo could not be read. Try a JPEG photo from your camera.", [{ path: "photo", message: "unreadable" }]);
       }
 
-      const template = await deps.gen.activeTemplate("tryon");
-      if (!template) throw new HttpError(503, "ai_disabled", "The changing room is not set up yet.");
       const suitImage = await deps.storage.download("public-suits", `${suit.final_path}-${Math.max(...suit.final_widths)}.webp`);
       const suitJpeg = await sharp(suitImage).jpeg({ quality: 85 }).toBuffer();
 
       const { id } = await deps.gen.insert({ kind: "tryon", suit_id: suit.id, status: "running", candidate_count: 1, requester_hash: requester, started_at: now().toISOString() });
       try {
-        const drawn = await deps.gemini.draw(template.body, [
+        const drawn = await deps.gemini.draw(TRYON_PROMPT, [
           { mime: "image/jpeg", data: person },
           { mime: "image/jpeg", data: suitJpeg },
         ]);
