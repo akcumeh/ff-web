@@ -21,7 +21,6 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
 
   return (
     <main id="main" className={styles.page}>
-      <p className={styles.wordmark}>Frankie Suits</p>
       <AdminNav />
       <h1 className={styles.title}>Orders and enquiries</h1>
       <ul className={styles.nav} aria-label="Filter">

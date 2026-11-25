@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { formatNaira, styleLabel, waLink, type OrderView } from "@ff/shared";
 import { track } from "@/lib/tracker";
 import styles from "@/components/site/pages.module.css";
+import { CallUs } from "@/components/site/ContactButtons";
 
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+const API = "/ffapi";
 
 export function OrderStatus({ initial, waNumber }: { initial: OrderView; waNumber: string | null }) {
   const [order, setOrder] = useState(initial);
@@ -28,14 +29,14 @@ export function OrderStatus({ initial, waNumber }: { initial: OrderView; waNumbe
 
   const help = (text: string) =>
     waNumber ? (
-      <a href={waLink(waNumber, text)} target="_blank" rel="noopener" className={styles.secondary}>Message us on WhatsApp</a>
+      <a href={waLink(waNumber, text)} target="_blank" rel="noopener" className={styles.secondary}>Chat on WhatsApp</a>
     ) : (
-      <a href="tel:07081156800" className={styles.secondary}>Call the head office</a>
+      <CallUs className={styles.secondary} />
     );
 
   const summary = (
     <dl className={styles.summary}>
-      <dt>Design</dt>
+      <dt>Suit</dt>
       <dd>{styleLabel[order.suit.style]}, Ref {order.suit.ref}</dd>
       <dt>Colour and size</dt>
       <dd>{order.variant.colour}, size {order.variant.size}</dd>
@@ -43,7 +44,7 @@ export function OrderStatus({ initial, waNumber }: { initial: OrderView; waNumbe
       <dd>{order.qty}</dd>
       <dt>Amount</dt>
       <dd>{formatNaira(order.amount_kobo)}</dd>
-      <dt>Reference</dt>
+      <dt>Order number</dt>
       <dd>{order.ref}</dd>
     </dl>
   );
@@ -56,20 +57,20 @@ export function OrderStatus({ initial, waNumber }: { initial: OrderView; waNumbe
           {summary}
           {tries >= 10 ? (
             <>
-              <p className={styles.body}>We have not confirmed your payment yet. If money left your account, message us on WhatsApp and quote this reference.</p>
+              <p className={styles.body}>We have not seen your payment yet. If money left your account, chat with us on WhatsApp and send this order number.</p>
               {help(`Hello Frankie Suits. I paid for order ${order.ref} but the page has not confirmed it.`)}
             </>
           ) : (
-            <p className={styles.body}>This usually takes a few seconds.</p>
+            <p className={styles.body}>Please wait a few seconds.</p>
           )}
         </>
       )}
 
       {(order.status === "paid" || order.status === "delivered") && (
         <>
-          <h1 className={styles.h1}>{order.status === "delivered" ? "Delivered" : "We have your payment"}</h1>
+          <h1 className={styles.h1}>{order.status === "delivered" ? "Delivered" : "Thank you, you have paid"}</h1>
           {summary}
-          <p className={styles.body}>We arrange delivery with you on WhatsApp.</p>
+          <p className={styles.body}>Now tap below to agree the delivery with us on WhatsApp.</p>
           {waNumber ? (
             <a
               href={waLink(waNumber, `Hello Frankie Suits. I'd like to arrange delivery for order ${order.ref}.`)}
@@ -81,17 +82,17 @@ export function OrderStatus({ initial, waNumber }: { initial: OrderView; waNumbe
               Arrange delivery on WhatsApp
             </a>
           ) : (
-            <a href="tel:07081156800" className={styles.primary}>Call the head office</a>
+            <CallUs className={styles.primary} />
           )}
         </>
       )}
 
       {(order.status === "failed" || order.status === "cancelled") && (
         <>
-          <h1 className={styles.h1}>This payment did not go through</h1>
-          <p className={styles.body}>Nothing was taken for this order. You can try again from the design page.</p>
+          <h1 className={styles.h1}>This payment did not work</h1>
+          <p className={styles.body}>No money was taken. You can try again from the suit page.</p>
           <div className={styles.actions}>
-            <Link href={`/suits/${order.suit.slug}`} className={styles.primary}>Back to the design</Link>
+            <Link href={`/suits/${order.suit.slug}`} className={styles.primary}>Back to the suit</Link>
             {help(`Hello Frankie Suits. My payment for order ${order.ref} did not go through.`)}
           </div>
         </>

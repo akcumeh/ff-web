@@ -5,10 +5,11 @@ import { ApiError, OrderCreate, OrderCreated } from "@ff/shared";
 import { visitorCookieIfAccepted } from "@/lib/tracker";
 import { EnquireLink } from "./EnquireLink";
 import styles from "./buy.module.css";
+import { CallUs } from "./ContactButtons";
 
 type Variant = { id: string; colour: string; hex: string | null; size: string; in_stock: boolean };
 
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+const API = "/ffapi";
 
 export function SuitBuy({
   slug,
@@ -74,31 +75,31 @@ export function SuitBuy({
       const out: Record<string, string> = {};
       for (const i of parsed.error.issues) out[String(i.path.at(-1))] ??= i.message;
       setFields(out);
-      setNotice("Some details need fixing.");
+      setNotice("Please check the boxes marked in red.");
       noticeRef.current?.focus();
       return;
     }
     setFields({});
     setBusy(true);
-    setNotice("Taking you to Paystack.");
+    setNotice("Taking you to the payment page.");
     try {
       const res = await fetch(`${API}/orders`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(parsed.data) });
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const err = ApiError.safeParse(body);
-        setNotice(err.success ? err.data.error.message : "Something went wrong. Try again.");
+        setNotice(err.success ? err.data.error.message : "Something went wrong. Please try again.");
         noticeRef.current?.focus();
         return;
       }
       const created = OrderCreated.parse(body);
       const host = new URL(created.checkout_url).hostname;
       if (host !== "checkout.paystack.com" && !host.endsWith(".paystack.com") && host !== "paystack.com") {
-        setNotice("Something went wrong. Try again.");
+        setNotice("Something went wrong. Please try again.");
         return;
       }
       window.location.assign(created.checkout_url);
     } catch {
-      setNotice("No connection. Check your internet and try again.");
+      setNotice("No internet. Please check your connection and try again.");
       noticeRef.current?.focus();
     } finally {
       setBusy(false);
@@ -148,14 +149,14 @@ export function SuitBuy({
 
       <div className={styles.keys}>
         {soldOut ? (
-          <p className={styles.soldOut}>This design has sold out. Ask us whether we can get more.</p>
+          <p className={styles.soldOut}>This suit is sold out. Ask us if we can get more.</p>
         ) : (
           <button type="button" className={styles.primary} onClick={payNow}>Pay now</button>
         )}
         {waNumber ? (
           <EnquireLink number={waNumber} slug={slug} baseMessage={enquiryMessage} className={styles.secondary} />
         ) : (
-          <a href={`tel:${telFallback}`} className={styles.secondary}>Call the head office</a>
+          <CallUs className={styles.secondary} />
         )}
       </div>
 
@@ -166,7 +167,7 @@ export function SuitBuy({
           {[
             { name: "name", label: "Full name", type: "text", auto: "name" },
             { name: "phone", label: "Phone", type: "tel", auto: "tel" },
-            { name: "email", label: "Email", type: "email", auto: "email", hint: "Paystack sends your receipt here." },
+            { name: "email", label: "Email", type: "email", auto: "email", hint: "We send your receipt here." },
           ].map((fld) => (
             <div key={fld.name} className={styles.field}>
               <label htmlFor={`f-${fld.name}`} className={styles.label}>{fld.label}</label>
@@ -189,7 +190,7 @@ export function SuitBuy({
             {fields.address && <p id="e-address" className={styles.error}>{fields.address}</p>}
           </div>
           <div className={styles.field}>
-            <label htmlFor="f-notes" className={styles.label}>Notes (optional)</label>
+            <label htmlFor="f-notes" className={styles.label}>Anything else? (optional)</label>
             <textarea id="f-notes" name="notes" rows={2} className={styles.input} />
           </div>
           <label className={styles.check}>

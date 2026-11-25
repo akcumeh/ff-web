@@ -12,9 +12,7 @@
 .legend {
   margin-bottom: var(--space-1);
   padding: 0;
-  font: var(--sub-caps);
-  letter-spacing: var(--sub-caps-tracking);
-  text-transform: uppercase;
+  font: var(--ui-sm);
 }
 
 .options {
@@ -105,9 +103,7 @@
   min-height: 56px;
   padding: 0 32px;
   border-radius: var(--radius-square);
-  font: var(--sub-caps);
-  letter-spacing: var(--sub-caps-tracking);
-  text-transform: uppercase;
+  font: var(--ui);
   text-decoration: none;
   cursor: pointer;
 }
