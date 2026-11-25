@@ -8,10 +8,14 @@ import styles from "./site.module.css";
 export function SiteAnalytics() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [agree, setAgree] = useState(false);
 
   useEffect(() => {
     setOpen(consent() === "unset");
-    const reopen = () => setOpen(true);
+    const reopen = () => {
+      setAgree(consent() === "accepted");
+      setOpen(true);
+    };
     window.addEventListener("ff:open-consent", reopen);
     return () => window.removeEventListener("ff:open-consent", reopen);
   }, []);
@@ -62,20 +66,22 @@ export function SiteAnalytics() {
 
   if (!open) return null;
 
-  const decide = (choice: "accepted" | "declined") => {
-    chooseConsent(choice);
+  const save = () => {
+    chooseConsent(agree ? "accepted" : "declined");
     setOpen(false);
   };
 
   return (
-    <section role="region" aria-label="Analytics choice" className={styles.consent}>
+    <section role="region" aria-label="Visit counting" className={styles.consent}>
       <p className={styles.consentText}>
-        We count visits to see which suits people look at. If you accept, we also give your browser a random id so we can tell visitors
-        apart. We never use your name or number for this. You can change your mind in Privacy settings at the bottom of any page.
+        We count which suits people look at, so we know what to bring in. We never collect your name or phone number.
       </p>
+      <label className={styles.consentCheck}>
+        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+        <span>You can count my visits too. This does not tell you who I am.</span>
+      </label>
       <div className={styles.consentKeys}>
-        <button type="button" className={styles.consentKey} onClick={() => decide("accepted")}>Accept</button>
-        <button type="button" className={styles.consentKey} onClick={() => decide("declined")}>No thanks</button>
+        <button type="button" className={styles.consentKey} onClick={save}>Done</button>
       </div>
     </section>
   );
@@ -84,7 +90,7 @@ export function SiteAnalytics() {
 export function PrivacySettingsButton({ className }: { className?: string }) {
   return (
     <button type="button" className={className} onClick={() => window.dispatchEvent(new Event("ff:open-consent"))}>
-      Privacy settings
+      Visit counting
     </button>
   );
 }

@@ -9,7 +9,7 @@ type Event =
   | { type: "delivery_click"; order_ref: string }
   | { type: "join_channel_click"; suit_slug?: string };
 
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+const API = "/ffapi";
 const YEAR = 60 * 60 * 24 * 365;
 
 let source: Source | null = null;

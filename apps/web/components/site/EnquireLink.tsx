@@ -8,7 +8,7 @@ export function EnquireLink({
   slug,
   baseMessage,
   className,
-  label = "Ask us about this design",
+  label = "Ask about this suit on WhatsApp",
 }: {
   number: string;
   slug: string;

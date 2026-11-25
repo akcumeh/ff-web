@@ -14,7 +14,7 @@ export function SnapshotForm() {
     e.preventDefault();
     const followers = Number(value);
     if (!Number.isInteger(followers) || followers < 0) {
-      setMessage("Type the follower count as a whole number.");
+      setMessage("Type the number only, for example 250.");
       return;
     }
     const res = await adminCall("POST", "/snapshots", { platform: "whatsapp", taken_on: new Date().toISOString().slice(0, 10), followers });
@@ -25,10 +25,10 @@ export function SnapshotForm() {
   return (
     <form onSubmit={save} className={styles.inline} noValidate>
       <div className={styles.field}>
-        <label htmlFor="wa-count" className={styles.label}>WhatsApp channel followers today</label>
+        <label htmlFor="wa-count" className={styles.label}>WhatsApp followers today</label>
         <input id="wa-count" inputMode="numeric" className={styles.input} value={value} onChange={(e) => setValue(e.target.value)} />
       </div>
-      <button type="submit" className={styles.secondary}>Save count</button>
+      <button type="submit" className={styles.secondary}>Save</button>
       <p role="status" aria-live="polite" className={styles.ok}>{message}</p>
     </form>
   );
