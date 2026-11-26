@@ -1,84 +1,99 @@
-import { randomUUID } from "node:crypto";
-import express, { Router } from "express";
-import helmet from "helmet";
-import cors from "cors";
-import type { HealthResponse } from "@ff/shared";
-import { currentAdmin, requireAdmin, type AuthDeps } from "./lib/auth.ts";
-import { errorHandler, notFound } from "./lib/errors.ts";
-import { catalogueRouter } from "./routes/catalogue.ts";
-import type { Catalogue } from "./services/catalogue.ts";
-import { adminCatalogueRouter } from "./routes/admin-catalogue.ts";
-import type { AdminCatalogue } from "./services/admin-catalogue.ts";
-import { adminAiRouter } from "./routes/admin-ai.ts";
-import type { Generation } from "./services/generation.ts";
-import { adminChannelsRouter } from "./routes/admin-channels.ts";
-import type { Channels } from "./services/channels.ts";
-import type { AdminCatalogueRepo } from "./services/admin-catalogue.ts";
+import { createApp } from "./create-app.ts";
+import { loadConfig } from "./config.ts";
+import { createSupabase, supabaseAuthDeps } from "./lib/supabase.ts";
+import { supabaseCatalogueRepo } from "./repos/catalogue-repo.ts";
+import { createCatalogue } from "./services/catalogue.ts";
+import { supabaseAdminCatalogueRepo } from "./repos/admin-catalogue-repo.ts";
+import { createAdminCatalogue } from "./services/admin-catalogue.ts";
+import { supabaseStorage } from "./lib/storage.ts";
+import { revalidator, supabaseAudit } from "./lib/side-effects.ts";
+import { supabaseGenerationRepo } from "./repos/generation-repo.ts";
+import { createGeneration } from "./services/generation.ts";
+import { createGemini, GeminiFailure, type GeminiPort } from "./services/gemini.ts";
+import { supabaseChannelRepo } from "./repos/channel-repo.ts";
+import { createChannels } from "./services/channels.ts";
+import { createTelegram } from "./services/telegram.ts";
+import { supabaseAnalyticsRepo } from "./repos/analytics-repo.ts";
+import { createAnalytics } from "./services/analytics.ts";
+import { createNightly } from "./services/nightly.ts";
+import { adminAnalyticsRouter, cronRouter, publicAnalyticsRouter, supabaseAdminAnalytics } from "./routes/analytics.ts";
+import { supabaseOrdersRepo } from "./repos/orders-repo.ts";
+import { createOrders } from "./services/orders.ts";
+import { createPaystack } from "./services/paystack.ts";
+import { adminOrdersRouter, publicOrdersRouter, webhookRouter } from "./routes/orders.ts";
+import { createTryon } from "./services/tryon.ts";
+import { supabaseTryonSuit, tryonRouter } from "./routes/tryon.ts";
 
-export type AppDeps = {
-  allowedOrigins: (string | RegExp)[];
-  auth: AuthDeps;
-  catalogue: Catalogue;
-  adminCatalogue: AdminCatalogue;
-  generation: Generation;
-  channels: Channels;
-  suitLookup: Pick<AdminCatalogueRepo, "getSuit">;
-  background?: (p: Promise<unknown>) => void;
-  rawBodyRouters?: Router[];
-  publicRouters?: Router[];
-  adminRouters?: Router[];
+const config = loadConfig();
+const supabase = createSupabase(config);
+const audit = supabaseAudit(supabase);
+const catalogueRepo = supabaseAdminCatalogueRepo(supabase);
+const storage = supabaseStorage(supabase);
+const genRepo = supabaseGenerationRepo(supabase);
+
+const telegram = config.telegram.token ? createTelegram({ token: config.telegram.token }) : null;
+const alert = async (text: string) => {
+    if (telegram && config.telegram.alertChatId) await telegram.sendMessage(config.telegram.alertChatId, text).catch(() => {});
 };
 
-export function createApp(deps: AppDeps) {
-  const app = express();
-  app.disable("x-powered-by");
-  app.set("trust proxy", 1);
+const noKey = async (): Promise<never> => {
+    throw new GeminiFailure("failed", "no_api_key");
+};
+const gemini: GeminiPort = config.googleApiKey ? createGemini({ apiKey: config.googleApiKey }) : { observe: noKey, write: noKey, draw: noKey };
 
-  app.use((req, res, next) => {
-    const incoming = req.get("x-request-id");
-    const id = incoming && /^[A-Za-z0-9-]{8,64}$/.test(incoming) ? incoming : randomUUID();
-    res.locals.requestId = id;
-    res.set("x-request-id", id);
-    next();
-  });
-  app.use(helmet());
-  app.use(
-    cors({
-      origin: deps.allowedOrigins,
-      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: false,
+const channels = createChannels({
+    repo: supabaseChannelRepo(supabase),
+    storage,
+    telegram,
+    channelId: config.telegram.channelId,
+    alertChatId: config.telegram.alertChatId,
+    siteUrl: config.siteUrl,
+    audit,
+});
+
+const analytics = createAnalytics({ repo: supabaseAnalyticsRepo(supabase), visitorSecret: config.visitorSecret, ipSecret: config.ipSecret });
+
+const orders = createOrders({
+    repo: supabaseOrdersRepo(supabase),
+    paystack: config.paystackSecret ? createPaystack({ secretKey: config.paystackSecret }) : null,
+    siteUrl: config.siteUrl,
+    alert,
+    audit,
+    visitorIdForCookie: (c) => analytics.visitorIdForCookie(c),
+    serverEvent: (type, suitId, visitorId) => analytics.serverEvent(type, suitId, visitorId),
+});
+
+const tryon = createTryon({
+    gen: genRepo,
+    storage,
+    gemini,
+    suitBySlug: supabaseTryonSuit(supabase),
+    visitorSecret: config.visitorSecret,
+    ipSecret: config.ipSecret,
+    enabled: config.ai.tryonEnabled && Boolean(config.googleApiKey),
+    monthlyCapUsdMicro: config.ai.tryonMonthlyCapUsdMicro,
+});
+
+const nightly = createNightly({ db: supabase, telegram, channelId: config.telegram.channelId, alertChatId: config.telegram.alertChatId });
+
+const app = createApp({
+    allowedOrigins: config.allowedOrigins,
+    auth: supabaseAuthDeps(supabase),
+    catalogue: createCatalogue(supabaseCatalogueRepo(supabase), `${config.supabaseUrl}/storage/v1/object/public/public-suits/`),
+    adminCatalogue: createAdminCatalogue({
+        repo: catalogueRepo,
+        storage,
+        audit,
+        revalidate: revalidator(config.siteUrl, config.revalidateSecret),
+        afterPublish: (suit, repost) => channels.afterPublish(suit, repost),
     }),
-  );
+    channels,
+    suitLookup: catalogueRepo,
+    generation: createGeneration({ gen: genRepo, catalogue: catalogueRepo, storage, gemini, audit, monthlyCapUsdMicro: config.ai.monthlyCapUsdMicro }),
+    rawBodyRouters: [webhookRouter(orders, config.paystackSecret), tryonRouter(tryon, analytics.limit)],
+    publicRouters: [publicAnalyticsRouter(analytics), publicOrdersRouter(orders, analytics.limit), cronRouter(nightly, config.cronSecret)],
+    adminRouters: [adminAnalyticsRouter(analytics, supabaseAdminAnalytics(supabase), audit), adminOrdersRouter(orders)],
+});
 
-  for (const r of deps.rawBodyRouters ?? []) app.use(r);
-
-  app.use(express.json({ limit: "100kb" }));
-
-  app.get("/health", (_req, res) => {
-    const body: HealthResponse = { ok: true, service: "ff-api", time: new Date().toISOString() };
-    res.json(body);
-  });
-
-  app.use("/suits", catalogueRouter(deps.catalogue));
-  for (const r of deps.publicRouters ?? []) app.use(r);
-
-  const admin = Router();
-  admin.use(requireAdmin(deps.auth));
-  admin.use((_req, res, next) => {
-    res.set("cache-control", "no-store");
-    next();
-  });
-  admin.get("/me", (_req, res) => {
-    res.json(currentAdmin(res));
-  });
-  admin.use(adminCatalogueRouter(deps.adminCatalogue));
-  admin.use(adminAiRouter(deps.generation, deps.background));
-  admin.use(adminChannelsRouter(deps.channels, deps.suitLookup));
-  for (const r of deps.adminRouters ?? []) admin.use(r);
-  app.use("/admin", admin);
-
-  app.use(notFound);
-  app.use(errorHandler);
-  return app;
-}
+export { config };
+export default app;
