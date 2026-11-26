@@ -1,40 +1,39 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+    push:
+        branches: [main]
+    pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v5
+    check:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 24
+                  cache: npm
 
-      # postinstall builds packages/shared
-      - run: npm ci
+            - run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+            - name: Typecheck
+              run: npm run typecheck
 
-      - name: Test
-        run: npm test
+            - name: Test
+              run: npm test
 
-      - name: Build api
-        run: npm run build -w @ff/api
+            - name: Build api
+              run: npm run build -w @ff/api
 
-      - name: Build web
-        run: npm run build -w @ff/web
+            - name: Build web
+              run: npm run build -w @ff/web
 
-      - name: Dependency audit
-        run: npm audit --audit-level=high
+            - name: Dependency audit
+              run: npm audit --audit-level=high

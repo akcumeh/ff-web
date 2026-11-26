@@ -1,153 +1,153 @@
 .room {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 760px;
-  grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    gap: var(--space-4);
+    max-width: 760px;
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .step {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-  padding: var(--space-2) 0 0;
-  border: 0;
-  border-top: 1px solid var(--line);
-  min-width: 0;
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: var(--space-2) 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    min-width: 0;
 }
 
 .legend {
-  padding: 0;
-  font: var(--ui-sm);
+    padding: 0;
+    font: var(--ui-sm);
 }
 
 .hint {
-  margin: 0;
-  font: var(--body-sm);
-  color: var(--ink-soft);
+    margin: 0;
+    font: var(--body-sm);
+    color: var(--ink-soft);
 }
 
 .suits {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(104px, 100%), 1fr));
-  gap: var(--space-1);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(104px, 100%), 1fr));
+    gap: var(--space-1);
 }
 
 .suit {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  font: var(--body-sm);
-  cursor: pointer;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    font: var(--body-sm);
+    cursor: pointer;
 }
 
 .suit:has(input:checked) {
-  border-color: var(--accent);
-  outline: 2px solid var(--accent);
+    border-color: var(--accent);
+    outline: 2px solid var(--accent);
 }
 
 .suit:has(input:focus-visible) {
-  outline: var(--focus-width) solid var(--focus);
-  outline-offset: var(--focus-offset);
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
 }
 
 .suit input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
 }
 
 .suit img,
 .noThumb {
-  display: block;
-  width: 100%;
-  max-width: 96px;
-  height: auto;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  object-position: top;
-  background: var(--surface);
+    display: block;
+    width: 100%;
+    max-width: 96px;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: top;
+    background: var(--surface);
 }
 
 .file {
-  min-height: 44px;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  color: var(--ink);
-  font: var(--body-md);
+    min-height: 44px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    color: var(--ink);
+    font: var(--body-md);
 }
 
 .check {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-1);
-  font: var(--body-md);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+    font: var(--body-md);
 }
 
 .check input {
-  width: 22px;
-  height: 22px;
-  margin-top: 3px;
-  accent-color: var(--accent);
+    width: 22px;
+    height: 22px;
+    margin-top: 3px;
+    accent-color: var(--accent);
 }
 
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
 }
 
 .primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 56px;
-  padding: 0 32px;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-square);
-  background: var(--accent);
-  color: var(--on-accent);
-  font: var(--ui);
-  text-decoration: none;
-  cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 0 32px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-square);
+    background: var(--accent);
+    color: var(--on-accent);
+    font: var(--ui);
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  color: var(--on-accent-hover);
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--on-accent-hover);
 }
 
 .primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .status {
-  margin: 0;
-  font: var(--body-md);
+    margin: 0;
+    font: var(--body-md);
 }
 
 .result {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-  justify-items: start;
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    justify-items: start;
 }
 
 .result img {
-  display: block;
-  width: 100%;
-  max-width: 480px;
-  height: auto;
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
 }
 
 .badge {
-  padding: 2px 8px;
-  border: 1px solid var(--line);
-  font: var(--ui-sm);
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    font: var(--ui-sm);
 }

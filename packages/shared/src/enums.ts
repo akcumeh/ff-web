@@ -12,6 +12,6 @@ export const ThemeId = z.enum(["light", "dark"]);
 export type ThemeId = z.infer<typeof ThemeId>;
 
 export const styleLabel: Record<SuitStyle, string> = {
-  london: "London style",
-  turkey: "Turkey style",
+    london: "London style",
+    turkey: "Turkey style",
 };

@@ -1,210 +1,210 @@
 .buy {
-  display: grid;
-  gap: var(--space-2);
+    display: grid;
+    gap: var(--space-2);
 }
 
 .picker {
-  margin: 0;
-  padding: 0;
-  border: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 .legend {
-  margin-bottom: var(--space-1);
-  padding: 0;
-  font: var(--ui-sm);
+    margin-bottom: var(--space-1);
+    padding: 0;
+    font: var(--ui-sm);
 }
 
 .options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
 }
 
 .option {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  font: var(--body-md);
-  cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    font: var(--body-md);
+    cursor: pointer;
 }
 
 .option:has(input:checked) {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
 }
 
 .option[data-out="true"] {
-  color: var(--ink-soft);
-  cursor: not-allowed;
+    color: var(--ink-soft);
+    cursor: not-allowed;
 }
 
 .option input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
 }
 
 .option:has(input:focus-visible) {
-  outline: var(--focus-width) solid var(--focus);
-  outline-offset: var(--focus-offset);
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
 }
 
 .swatch {
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--line);
-  background: var(--surface);
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--line);
+    background: var(--surface);
 }
 
 .out {
-  font: var(--body-sm);
+    font: var(--body-sm);
 }
 
 .qtyRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
 }
 
 .select {
-  min-height: 44px;
-  min-width: 80px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  font: var(--body-md);
+    min-height: 44px;
+    min-width: 80px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font: var(--body-md);
 }
 
 .notice {
-  margin: 0;
-  min-height: 1em;
-  font: var(--body-sm);
-  color: var(--accent-text);
+    margin: 0;
+    min-height: 1em;
+    font: var(--body-sm);
+    color: var(--accent-text);
 }
 
 .keys {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
 }
 
 .primary,
 .secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 56px;
-  padding: 0 32px;
-  border-radius: var(--radius-square);
-  font: var(--ui);
-  text-decoration: none;
-  cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 0 32px;
+    border-radius: var(--radius-square);
+    font: var(--ui);
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .primary {
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--on-accent);
 }
 
 .primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  color: var(--on-accent-hover);
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--on-accent-hover);
 }
 
 .primary:disabled {
-  cursor: progress;
+    cursor: progress;
 }
 
 .secondary {
-  border: 1px solid var(--ink);
-  background: transparent;
-  color: var(--ink);
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
 }
 
 .secondary:hover {
-  background: var(--hover);
+    background: var(--hover);
 }
 
 .soldOut {
-  margin: 0;
-  font: var(--body-md);
+    margin: 0;
+    font: var(--body-md);
 }
 
 .form {
-  display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line);
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
 }
 
 .formTitle {
-  margin: 0;
-  font: var(--h2);
-  font-size: 30px;
-  line-height: 36px;
+    margin: 0;
+    font: var(--h2);
+    font-size: 30px;
+    line-height: 36px;
 }
 
 .field {
-  display: grid;
-  gap: var(--space-1);
+    display: grid;
+    gap: var(--space-1);
 }
 
 .label {
-  font: var(--body-sm);
+    font: var(--body-sm);
 }
 
 .input {
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 0;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: var(--radius-square);
-  background: transparent;
-  color: var(--ink);
-  font: var(--body-md);
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: var(--radius-square);
+    background: transparent;
+    color: var(--ink);
+    font: var(--body-md);
 }
 
 .input[aria-invalid="true"] {
-  border-bottom-color: var(--accent-text);
+    border-bottom-color: var(--accent-text);
 }
 
 .hint {
-  margin: 0;
-  font: var(--body-sm);
-  color: var(--ink-soft);
+    margin: 0;
+    font: var(--body-sm);
+    color: var(--ink-soft);
 }
 
 .error {
-  margin: 0;
-  font: var(--body-sm);
-  color: var(--accent-text);
+    margin: 0;
+    font: var(--body-sm);
+    color: var(--accent-text);
 }
 
 .check {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-1);
-  font: var(--body-md);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+    font: var(--body-md);
 }
 
 .check input {
-  width: 22px;
-  height: 22px;
-  margin-top: 3px;
-  accent-color: var(--accent);
+    width: 22px;
+    height: 22px;
+    margin-top: 3px;
+    accent-color: var(--accent);
 }
 
 .check a {
-  color: var(--link);
+    color: var(--link);
 }

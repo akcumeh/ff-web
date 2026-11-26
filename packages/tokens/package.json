@@ -1,20 +1,20 @@
 {
-  "name": "@ff/tokens",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Frankie Suits design tokens (design system v0.2) as CSS variables",
-  "exports": {
-    "./tokens.css": "./tokens.css"
-  },
-  "files": [
-    "tokens.css"
-  ],
-  "devDependencies": {
-    "@types/node": "^26.6.6",
-    "vitest": "^5.1.1"
-  },
-  "type": "module",
-  "scripts": {
-    "test": "vitest run"
-  }
+    "name": "@ff/tokens",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Frankie Suits design tokens (design system v0.2) as CSS variables",
+    "exports": {
+        "./tokens.css": "./tokens.css"
+    },
+    "files": [
+        "tokens.css"
+    ],
+    "devDependencies": {
+        "@types/node": "^26.6.6",
+        "vitest": "^5.1.1"
+    },
+    "type": "module",
+    "scripts": {
+        "test": "vitest run"
+    }
 }

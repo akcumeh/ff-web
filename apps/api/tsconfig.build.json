@@ -1,14 +1,14 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "rewriteRelativeImportExtensions": true,
-    "allowImportingTsExtensions": true,
-    "declaration": false,
-    "sourceMap": false,
-    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
-    "types": ["node"]
-  },
-  "include": ["src"]
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "dist",
+        "rewriteRelativeImportExtensions": true,
+        "allowImportingTsExtensions": true,
+        "declaration": false,
+        "sourceMap": false,
+        "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+        "types": ["node"]
+    },
+    "include": ["src"]
 }
