@@ -45,8 +45,8 @@ export default async function AdminHomePage() {
 
       {result.kind === "offline" && (
         <>
-          <h1 className={styles.title}>The API is not answering</h1>
-          <p className={styles.lead}>Check that the API is running, then reload this page.</p>
+          <h1 className={styles.title}>Something went wrong</h1>
+          <p className={styles.lead}>The site is having a problem right now. Please wait a few minutes and refresh the page. If it keeps happening, tell Angel.</p>
         </>
       )}
 

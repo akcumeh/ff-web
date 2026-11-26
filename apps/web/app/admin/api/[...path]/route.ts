@@ -53,7 +53,7 @@ async function forward(request: NextRequest, ctx: { params: Promise<{ path: stri
       signal: AbortSignal.timeout(60_000),
     });
   } catch {
-    return fail(502, "upstream_failed", "The API did not answer.");
+    return fail(502, "upstream_failed", "The site is having a problem right now. Please try again in a few minutes.");
   }
 
   return new NextResponse(await upstream.text(), {

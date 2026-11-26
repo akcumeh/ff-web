@@ -36,7 +36,7 @@ export default async function EditSuitPage({ params }: { params: Promise<{ id: s
           <SuitEditor key={result.data.id} suit={result.data} siteUrl={serverEnv().NEXT_PUBLIC_SITE_URL} />
         </>
       ) : (
-        <p className={styles.error}>{result.kind === "offline" ? "The API is not answering. Reload in a moment." : result.message}</p>
+        <p className={styles.error}>{result.kind === "offline" ? "The site is having a problem right now. Please wait a few minutes and refresh the page." : result.message}</p>
       )}
     </main>
   );

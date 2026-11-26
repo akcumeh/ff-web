@@ -14,7 +14,7 @@ const ERROR_TEXT: Record<string, string> = {
   not_a_garment: "The photo does not look like a suit. Try another photo.",
   timeout: "The AI run took too long and was stopped. Try again.",
   no_image: "The AI did not send back a picture. Try again.",
-  no_api_key: "The Google API key is missing on the server.",
+  no_api_key: "AI photos are not working right now. You can still publish with your own photo.",
 };
 
 const PROBLEM_TEXT: Record<string, string> = {

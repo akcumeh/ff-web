@@ -83,7 +83,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         </>
       )}
 
-      {(orders?.kind === "offline" || enquiries?.kind === "offline") && <p className={styles.error}>The API is not answering.</p>}
+      {(orders?.kind === "offline" || enquiries?.kind === "offline") && <p className={styles.error}>The site is having a problem right now. Please wait a few minutes and refresh the page.</p>}
     </main>
   );
 }

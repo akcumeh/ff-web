@@ -21,7 +21,7 @@ export default async function PostsPage() {
       <AdminNav />
       <h1 className={styles.title}>To post on WhatsApp</h1>
       <p className={styles.lead}>WhatsApp has no way for the site to post into the channel, so each new suit waits here. Save the image, copy the caption, post it in the channel, then press I posted it.</p>
-      {result.kind === "offline" && <p className={styles.error}>The API is not answering. Reload in a moment.</p>}
+      {result.kind === "offline" && <p className={styles.error}>The site is having a problem right now. Please wait a few minutes and refresh the page.</p>}
       {result.kind === "error" && <p className={styles.error}>{result.message}</p>}
       {result.kind === "ok" && result.data.items.length === 0 && <p className={styles.lead}>Nothing to post. Every published suit is on the channel.</p>}
       {result.kind === "ok" && result.data.items.length > 0 && (

@@ -18,7 +18,7 @@ export default async function AdminSuitsPage() {
       <AdminNav />
       <h1 className={styles.title}>Suits</h1>
 
-      {result.kind === "offline" && <p className={styles.lead}>The API is not answering. Reload in a moment.</p>}
+      {result.kind === "offline" && <p className={styles.lead}>The site is having a problem right now. Please wait a few minutes and refresh the page.</p>}
       {result.kind === "error" && <p className={styles.lead}>{result.message}</p>}
       {result.kind === "ok" && result.data.items.length === 0 && (
         <p className={styles.lead}>

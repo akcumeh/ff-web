@@ -19,7 +19,7 @@ export default async function NewSuitPage() {
       {batches.kind === "ok" ? (
         <NewSuitForm batches={batches.data.items} />
       ) : (
-        <p className={styles.error}>{batches.kind === "offline" ? "The API is not answering. Reload in a moment." : batches.message}</p>
+        <p className={styles.error}>{batches.kind === "offline" ? "The site is having a problem right now. Please wait a few minutes and refresh the page." : batches.message}</p>
       )}
     </main>
   );
