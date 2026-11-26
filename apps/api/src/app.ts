@@ -1,3 +1,4 @@
+import express from "express";
 import { createApp } from "./create-app.ts";
 import { loadConfig } from "./config.ts";
 import { createSupabase, supabaseAuthDeps } from "./lib/supabase.ts";
